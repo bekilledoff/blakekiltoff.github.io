@@ -95,18 +95,57 @@
     }
 
     /* ── Sidebar ── */
+    .sidebar-wrap {
+      position: relative;
+      display: flex;
+      flex-shrink: 0;
+      transition: width 0.25s ease;
+      width: 300px;
+    }
+    .sidebar-wrap.collapsed { width: 0; }
+
     .sidebar {
       width: 300px;
       flex-shrink: 0;
       background: #fff;
       border-right: 1px solid #e5e7eb;
       overflow-y: auto;
+      overflow-x: hidden;
       display: flex;
       flex-direction: column;
+      transition: transform 0.25s ease;
+    }
+    .sidebar-wrap.collapsed .sidebar {
+      transform: translateX(-300px);
+      pointer-events: none;
     }
     .sidebar::-webkit-scrollbar { width: 5px; }
     .sidebar::-webkit-scrollbar-track { background: #f9fafb; }
     .sidebar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+
+    /* ── Collapse toggle ── */
+    .sidebar-toggle {
+      position: absolute;
+      right: -14px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 10;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      color: #6b7280;
+      transition: background 0.1s, color 0.1s;
+      flex-shrink: 0;
+    }
+    .sidebar-toggle:hover { background: #f3f4f6; color: #111; }
 
     .event-card {
       padding: 13px 16px;
@@ -354,7 +393,10 @@
 </div>
 
 <div class="main">
-  <div class="sidebar" id="sidebar"></div>
+  <div class="sidebar-wrap" id="sidebar-wrap">
+    <div class="sidebar" id="sidebar"></div>
+    <button class="sidebar-toggle" id="sidebar-toggle" title="Toggle list">◀</button>
+  </div>
   <div id="map"></div>
 </div>
 
@@ -669,6 +711,17 @@
     setupFilters();
     applyFilters();
   }
+
+  // ── Sidebar collapse toggle ───────────────────────────────────────────────
+  document.getElementById("sidebar-toggle").addEventListener("click", () => {
+    const wrap = document.getElementById("sidebar-wrap");
+    const btn  = document.getElementById("sidebar-toggle");
+    const collapsed = wrap.classList.toggle("collapsed");
+    btn.textContent = collapsed ? "▶" : "◀";
+    btn.title = collapsed ? "Show list" : "Hide list";
+    // Let the map resize after the CSS transition completes
+    setTimeout(() => google.maps.event.trigger(map, "resize"), 260);
+  });
 
   // ── Google Maps init callback ─────────────────────────────────────────────
   window.initMap = function () {
