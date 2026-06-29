@@ -46,29 +46,29 @@
     .filter-bar {
       background: #fff;
       border-bottom: 1px solid #e5e7eb;
-      padding: 9px 20px;
+      padding: 7px 16px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       flex-wrap: wrap;
       flex-shrink: 0;
     }
     .filter-label {
-      font-size: 0.68rem;
+      font-size: 0.64rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.07em;
       color: #9ca3af;
-      margin-right: 2px;
+      margin-right: 1px;
     }
-    .filter-group { display: flex; gap: 5px; flex-wrap: wrap; }
+    .filter-group { display: flex; gap: 4px; flex-wrap: wrap; }
     .pill {
-      padding: 4px 11px;
+      padding: 3px 9px;
       border-radius: 999px;
       border: 1px solid #d1d5db;
       background: #fff;
       color: #6b7280;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       cursor: pointer;
       transition: background 0.12s, color 0.12s, border-color 0.12s;
       white-space: nowrap;
@@ -82,9 +82,73 @@
     }
     .divider {
       width: 1px;
-      height: 18px;
+      height: 16px;
       background: #e5e7eb;
       flex-shrink: 0;
+    }
+
+    /* ── Time range slider ── */
+    .time-slider-wrap {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .time-slider-label {
+      font-size: 0.72rem;
+      color: #374151;
+      white-space: nowrap;
+      min-width: 110px;
+    }
+    .dual-range {
+      position: relative;
+      width: 120px;
+      height: 18px;
+    }
+    .dual-range input[type=range] {
+      position: absolute;
+      width: 100%;
+      height: 4px;
+      top: 50%;
+      transform: translateY(-50%);
+      appearance: none;
+      -webkit-appearance: none;
+      background: transparent;
+      pointer-events: none;
+    }
+    .dual-range input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: #2563eb;
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 1px #2563eb;
+      cursor: pointer;
+      pointer-events: all;
+    }
+    .dual-range input[type=range]::-moz-range-thumb {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: #2563eb;
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 1px #2563eb;
+      cursor: pointer;
+      pointer-events: all;
+    }
+    .range-track {
+      position: absolute;
+      height: 4px;
+      top: 50%;
+      transform: translateY(-50%);
+      left: 0; right: 0;
+      background: #e5e7eb;
+      border-radius: 2px;
+      pointer-events: none;
+    }
+    .range-fill {
+      position: absolute;
+      height: 100%;
+      background: #2563eb;
+      border-radius: 2px;
     }
 
     /* ── Main Layout ── */
@@ -294,6 +358,57 @@
     #config-banner code { color: #b45309; background: #fef3c7; padding: 1px 5px; border-radius: 3px; }
     #config-banner a { color: #b45309; }
 
+    /* ── Category dot in sidebar cards ── */
+    .card-top { display: flex; align-items: flex-start; gap: 8px; }
+    .cat-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 3px;
+      border: 1.5px solid rgba(0,0,0,0.12);
+    }
+    .cat-label {
+      font-size: 0.67rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #9ca3af;
+      margin-bottom: 2px;
+    }
+
+    /* ── Map legend ── */
+    #map-legend {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 9px 12px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.1);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 10px;
+    }
+    .legend-title {
+      font-size: 0.64rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #9ca3af;
+      margin-bottom: 6px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 2px 0;
+      font-size: 0.75rem;
+      color: #374151;
+    }
+    .legend-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      border: 1.5px solid rgba(0,0,0,0.12);
+    }
+
     /* ── Day badges ── */
     .day-badge {
       display: inline-block;
@@ -331,6 +446,20 @@
 
     // How many days ahead to show events (default: 90)
     DAYS_AHEAD: 90,
+
+    // Legend: map Google Calendar event colors to your category names.
+    // To categorize an event, right-click it in Google Calendar and pick a color.
+    // Available color names: tomato, flamingo, tangerine, banana, sage,
+    //   basil, peacock, blueberry, lavender, grape, graphite
+    // Events with no color set will show as the default blue dot with no label.
+    LEGEND: {
+      "tomato":    "Signup In Person",
+      "peacock":   "Signup In Person/Online",
+      "sage":      "Online Signup",
+      "banana":    "Contact Showrunner to Signup",
+      "grape":     "Irregular/Unpredictable Schedule",
+      "graphite":  "Maybe Canceled",
+    },
   };
 </script>
 <!-- ══════════════════════════════════════════ -->
@@ -373,22 +502,23 @@
 
   <div class="divider"></div>
 
-  <span class="filter-label">Time</span>
-  <div class="filter-group" id="time-filters">
-    <button class="pill active" data-time="all">All</button>
-    <button class="pill" data-time="morning" title="Before noon">Morning</button>
-    <button class="pill" data-time="afternoon" title="Noon–6pm">Afternoon</button>
-    <button class="pill" data-time="evening" title="After 6pm">Evening</button>
+  <span class="filter-label">Range</span>
+  <div class="filter-group" id="range-filters">
+    <button class="pill active" data-range="7">This week</button>
+    <button class="pill" data-range="14">2 weeks</button>
+    <button class="pill" data-range="30">Month</button>
   </div>
 
   <div class="divider"></div>
 
-  <span class="filter-label">Range</span>
-  <div class="filter-group" id="range-filters">
-    <button class="pill active" data-range="all">All upcoming</button>
-    <button class="pill" data-range="7">This week</button>
-    <button class="pill" data-range="14">2 weeks</button>
-    <button class="pill" data-range="30">Month</button>
+  <div class="time-slider-wrap">
+    <span class="filter-label">Time</span>
+    <div class="dual-range" id="dual-range">
+      <div class="range-track"><div class="range-fill" id="range-fill"></div></div>
+      <input type="range" id="time-min" min="0" max="24" value="0" step="1">
+      <input type="range" id="time-max" min="0" max="24" value="24" step="1">
+    </div>
+    <span class="time-slider-label" id="time-slider-label">All times</span>
   </div>
 </div>
 
@@ -408,10 +538,36 @@
   let map = null;
   let selectedCardEl = null;
   let activeDay = "all";
-  let activeTime = "all";
-  let activeRange = "all";
+  let activeRange = 7;
+  let activeTimeMin = 0;   // hours (0–24)
+  let activeTimeMax = 24;
 
   const DAY_SHORT = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+  // Google Calendar colorId → color name + hex
+  const GCAL_COLORS = {
+    "1":  { name: "lavender",  hex: "#7986cb" },
+    "2":  { name: "sage",      hex: "#33b679" },
+    "3":  { name: "grape",     hex: "#8e24aa" },
+    "4":  { name: "flamingo",  hex: "#e67c73" },
+    "5":  { name: "banana",    hex: "#f6c026" },
+    "6":  { name: "tangerine", hex: "#f5511d" },
+    "7":  { name: "peacock",   hex: "#039be5" },
+    "8":  { name: "graphite",  hex: "#616161" },
+    "9":  { name: "blueberry", hex: "#3f51b5" },
+    "10": { name: "basil",     hex: "#0b8043" },
+    "11": { name: "tomato",    hex: "#d50000" },
+  };
+  const DEFAULT_PIN_COLOR = "#2563eb";
+
+  function getEventColor(ev) {
+    if (ev.colorId && GCAL_COLORS[ev.colorId]) {
+      const { name, hex } = GCAL_COLORS[ev.colorId];
+      const label = (CONFIG.LEGEND || {})[name] || null;
+      return { hex, label };
+    }
+    return { hex: DEFAULT_PIN_COLOR, label: null };
+  }
 
   // ── Helpers ────────────────────────────────────────────────────────────────
   function showOverlay(msg) {
@@ -442,11 +598,21 @@
     return date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
   }
 
-  function timeCategory(date) {
-    const h = date.getHours() + date.getMinutes() / 60;
-    if (h < 12) return "morning";
-    if (h < 18) return "afternoon";
-    return "evening";
+  function fmtHour(h) {
+    if (h === 0 || h === 24) return h === 0 ? "12 AM" : "midnight";
+    if (h === 12) return "noon";
+    return h < 12 ? `${h} AM` : `${h - 12} PM`;
+  }
+
+  function updateSliderUI() {
+    const min = activeTimeMin, max = activeTimeMax;
+    const pct = v => (v / 24) * 100;
+    document.getElementById("range-fill").style.left  = pct(min) + "%";
+    document.getElementById("range-fill").style.width = (pct(max) - pct(min)) + "%";
+    const label = document.getElementById("time-slider-label");
+    label.textContent = (min === 0 && max === 24)
+      ? "All times"
+      : `${fmtHour(min)} – ${fmtHour(max)}`;
   }
 
   function dayBadge(date) {
@@ -485,12 +651,11 @@
     return allEvents.filter(ev => {
       const start = ev.startDate;
       if (start < now) return false;
-      if (activeRange !== "all") {
-        const cutoff = new Date(now.getTime() + activeRange * 86400000);
-        if (start > cutoff) return false;
-      }
+      const cutoff = new Date(now.getTime() + activeRange * 86400000);
+      if (start > cutoff) return false;
       if (activeDay !== "all" && start.getDay() !== parseInt(activeDay)) return false;
-      if (activeTime !== "all" && timeCategory(start) !== activeTime) return false;
+      const h = start.getHours() + start.getMinutes() / 60;
+      if (h < activeTimeMin || h > activeTimeMax) return false;
       return true;
     });
   }
@@ -517,10 +682,17 @@
       const card = document.createElement("div");
       card.className = "event-card";
       card.dataset.index = i;
+      const { hex, label } = getEventColor(ev);
       card.innerHTML = `
-        <div class="name">${ev.summary}</div>
-        <div class="datetime">${dayBadge(ev.startDate)}${formatDate(ev.startDate)} · ${formatTime(ev.startDate)}</div>
-        ${ev.location ? `<div class="location">${ev.location}</div>` : ""}
+        <div class="card-top">
+          <span class="cat-dot" style="background:${hex}" title="${label || "Open Mic"}"></span>
+          <div style="flex:1;min-width:0">
+            ${label ? `<div class="cat-label">${label}</div>` : ""}
+            <div class="name">${ev.summary}</div>
+            <div class="datetime">${dayBadge(ev.startDate)}${formatDate(ev.startDate)} · ${formatTime(ev.startDate)}</div>
+            ${ev.location ? `<div class="location">${ev.location}</div>` : ""}
+          </div>
+        </div>
       `;
       card.addEventListener("click", () => selectEvent(ev, card));
       sidebar.appendChild(card);
@@ -530,14 +702,49 @@
   // ── Build info window HTML ─────────────────────────────────────────────────
   function buildInfoWindowContent(ev) {
     const desc = cleanDescription(ev.description);
+    const { hex, label } = getEventColor(ev);
+    const categoryBadge = label
+      ? `<span style="display:inline-flex;align-items:center;gap:5px;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;margin-bottom:4px;">
+           <span style="width:8px;height:8px;border-radius:50%;background:${hex};border:1.5px solid rgba(0,0,0,0.12);flex-shrink:0;display:inline-block;"></span>${label}
+         </span><br>`
+      : "";
     return `
       <div class="iw-outer">
+        ${categoryBadge}
         <div class="iw-name">${ev.summary}</div>
         <div class="iw-date">${formatDate(ev.startDate)} · ${formatTime(ev.startDate)}</div>
         ${ev.location ? `<div class="iw-location">📍 ${ev.location}</div>` : ""}
         ${desc ? `<div class="iw-divider"></div><div class="iw-description">${desc}</div>` : ""}
       </div>
     `;
+  }
+
+  // ── Render floating map legend ─────────────────────────────────────────────
+  function renderLegend() {
+    const legend = CONFIG.LEGEND || {};
+    const entries = Object.entries(legend);
+    if (!entries.length) return;
+
+    // Only show legend entries for colors actually used in loaded events
+    const usedColors = new Set(
+      allEvents.map(ev => ev.colorId && GCAL_COLORS[ev.colorId] ? GCAL_COLORS[ev.colorId].name : null)
+    );
+
+    const rows = entries
+      .filter(([name]) => usedColors.has(name))
+      .map(([name, label]) => {
+        const hex = Object.values(GCAL_COLORS).find(c => c.name === name)?.hex || DEFAULT_PIN_COLOR;
+        return `<div class="legend-item">
+          <span class="legend-dot" style="background:${hex}"></span>${label}
+        </div>`;
+      }).join("");
+
+    if (!rows) return;
+
+    const div = document.createElement("div");
+    div.id = "map-legend";
+    div.innerHTML = `<div class="legend-title">Venue type</div>${rows}`;
+    map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(div);
   }
 
   // ── Render map markers ────────────────────────────────────────────────────
@@ -555,6 +762,7 @@
       const pos = { lat: ev.lat, lng: ev.lng };
       bounds.extend(pos);
 
+      const { hex } = getEventColor(ev);
       const marker = new google.maps.Marker({
         position: pos,
         map,
@@ -562,7 +770,7 @@
         icon: {
           path: google.maps.SymbolPath.CIRCLE,
           scale: 9,
-          fillColor: "#2563eb",
+          fillColor: hex,
           fillOpacity: 1,
           strokeColor: "#fff",
           strokeWeight: 2.5,
@@ -606,22 +814,49 @@
     renderMarkers(filtered);
   }
 
-  // ── Filter pill handlers ──────────────────────────────────────────────────
+  // ── Filter handlers ───────────────────────────────────────────────────────
   function setupFilters() {
-    ["day-filters", "time-filters", "range-filters"].forEach(groupId => {
-      const key = groupId.replace("-filters", "");
-      document.querySelectorAll(`#${groupId} .pill`).forEach(btn => {
-        btn.addEventListener("click", () => {
-          document.querySelectorAll(`#${groupId} .pill`).forEach(b => b.classList.remove("active"));
-          btn.classList.add("active");
-          const val = btn.dataset[key] ?? btn.dataset.day ?? btn.dataset.time ?? btn.dataset.range;
-          if (key === "day") activeDay = val;
-          else if (key === "time") activeTime = val;
-          else if (key === "range") activeRange = val === "all" ? "all" : parseInt(val);
-          applyFilters();
-        });
+    // Day pills
+    document.querySelectorAll("#day-filters .pill").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("#day-filters .pill").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        activeDay = btn.dataset.day;
+        applyFilters();
       });
     });
+
+    // Range pills
+    document.querySelectorAll("#range-filters .pill").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("#range-filters .pill").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        activeRange = parseInt(btn.dataset.range);
+        applyFilters();
+      });
+    });
+
+    // Time range slider
+    const minEl = document.getElementById("time-min");
+    const maxEl = document.getElementById("time-max");
+    const THUMB_GAP = 1; // minimum hours between handles
+
+    function onSliderChange() {
+      let lo = parseInt(minEl.value);
+      let hi = parseInt(maxEl.value);
+      if (lo > hi - THUMB_GAP) {
+        if (this === minEl) { lo = hi - THUMB_GAP; minEl.value = lo; }
+        else                { hi = lo + THUMB_GAP; maxEl.value = hi; }
+      }
+      activeTimeMin = lo;
+      activeTimeMax = hi;
+      updateSliderUI();
+      applyFilters();
+    }
+
+    minEl.addEventListener("input", onSliderChange);
+    maxEl.addEventListener("input", onSliderChange);
+    updateSliderUI();
   }
 
   // ── Geocode an address ────────────────────────────────────────────────────
@@ -689,6 +924,7 @@
       summary: item.summary || "Open Mic",
       location: item.location || "",
       description: item.description || "",
+      colorId: item.colorId || null,   // set by right-clicking event in Google Calendar
       startDate: new Date(item.start?.dateTime || item.start?.date),
       endDate:   new Date(item.end?.dateTime   || item.end?.date),
       lat: null,
@@ -710,6 +946,7 @@
     hideOverlay();
     setupFilters();
     applyFilters();
+    renderLegend();
   }
 
   // ── Sidebar collapse toggle ───────────────────────────────────────────────
