@@ -375,6 +375,11 @@
       color: #9ca3af;
       margin-bottom: 2px;
     }
+    .no-pin-warning {
+      font-size: 0.7rem;
+      color: #f59e0b;
+      margin-top: 4px;
+    }
 
     /* ── Map legend ── */
     #map-legend {
@@ -447,18 +452,28 @@
     // How many days ahead to show events (default: 90)
     DAYS_AHEAD: 90,
 
+    // Pre-baked venue coordinates — eliminates Geocoding API calls for known venues.
+    // After your first successful page load, open the browser console and run:
+    //   exportVenueCoords()
+    // Then paste the output here to replace this empty object.
+    // New calendar events with addresses NOT listed here will still be geocoded
+    // automatically on first visit and cached for that visitor.
+    VENUES: {
+      // "3829 6th Ave, Tacoma, WA 98406": { "lat": 47.2378, "lng": -122.4629 },
+    },
+
     // Legend: map Google Calendar event colors to your category names.
     // To categorize an event, right-click it in Google Calendar and pick a color.
     // Available color names: tomato, flamingo, tangerine, banana, sage,
     //   basil, peacock, blueberry, lavender, grape, graphite
     // Events with no color set will show as the default blue dot with no label.
     LEGEND: {
-      "tomato":    "Signup In Person",
-      "peacock":   "Signup In Person/Online",
-      "sage":      "Online Signup",
-      "banana":    "Contact Showrunner to Signup",
-      "grape":     "Irregular/Unpredictable Schedule",
-      "graphite":  "Maybe Canceled",
+      "tomato":    "Showcase",
+      "peacock":   "Bar show",
+      "sage":      "Coffee shop / café",
+      "banana":    "Free / drop-in mic",
+      "grape":     "Club show",
+      "graphite":  "Other",
     },
   };
 </script>
@@ -504,9 +519,9 @@
 
   <span class="filter-label">Range</span>
   <div class="filter-group" id="range-filters">
-    <button class="pill active" data-range="7">This week</button>
-    <button class="pill" data-range="14">2 weeks</button>
-    <button class="pill" data-range="30">Month</button>
+    <button class="pill active" data-range="7">Next 7 days</button>
+    <button class="pill" data-range="14">Next 14 days</button>
+    <button class="pill" data-range="30">Next 30 days</button>
   </div>
 
   <div class="divider"></div>
@@ -691,6 +706,8 @@
             <div class="name">${ev.summary}</div>
             <div class="datetime">${dayBadge(ev.startDate)}${formatDate(ev.startDate)} · ${formatTime(ev.startDate)}</div>
             ${ev.location ? `<div class="location">${ev.location}</div>` : ""}
+            ${(!ev.lat && ev.location) ? `<div class="no-pin-warning">⚠ Could not place on map — check address in calendar</div>` : ""}
+            ${!ev.location ? `<div class="no-pin-warning">⚠ No address in calendar event</div>` : ""}
           </div>
         </div>
       `;
@@ -860,16 +877,69 @@
   }
 
   // ── Geocode an address ────────────────────────────────────────────────────
+  // Priority order:
+  //   1. CONFIG.VENUES lookup (pre-baked, works for all visitors, no API call)
+  //   2. localStorage cache (works for returning visitors)
+  //   3. Geocoding API (new visitors for addresses not in VENUES)
+  const GEO_CACHE_PREFIX = "geocache_v1_";
+
   async function geocode(address) {
+    // 1. Pre-baked lookup
+    const baked = (CONFIG.VENUES || {})[address];
+    if (baked) return baked;
+
+    // 2. localStorage cache
+    const cacheKey = GEO_CACHE_PREFIX + address;
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) return JSON.parse(cached);
+    } catch (_) {}
+
+    // 3. Geocoding API
     const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${CONFIG.GOOGLE_API_KEY}`;
-    const res = await fetch(url);
-    const data = await res.json();
-    if (data.status === "OK" && data.results.length) {
-      const loc = data.results[0].geometry.location;
-      return { lat: loc.lat, lng: loc.lng };
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.status === "OK" && data.results.length) {
+        const { lat, lng } = data.results[0].geometry.location;
+        const result = { lat, lng };
+        try { localStorage.setItem(cacheKey, JSON.stringify(result)); } catch (_) {}
+        return result;
+      }
+      console.warn(`Geocoding failed for "${address}" — status: ${data.status}`);
+    } catch (e) {
+      console.warn(`Geocoding error for "${address}":`, e);
     }
     return null;
   }
+
+  // ── Console helpers ───────────────────────────────────────────────────────
+  // Run exportVenueCoords() in the browser console after a successful load,
+  // then paste the output into CONFIG.VENUES to pre-bake all coordinates.
+  window.exportVenueCoords = function () {
+    const venues = {};
+    Object.keys(localStorage)
+      .filter(k => k.startsWith(GEO_CACHE_PREFIX))
+      .forEach(k => {
+        try {
+          venues[k.slice(GEO_CACHE_PREFIX.length)] = JSON.parse(localStorage.getItem(k));
+        } catch (_) {}
+      });
+    // Also include anything already in CONFIG.VENUES
+    Object.assign(venues, CONFIG.VENUES || {});
+    const output = "    VENUES: " + JSON.stringify(venues, null, 6)
+      .replace(/^/gm, "  ")         // indent to match CONFIG style
+      .trimStart() + ",";
+    console.log("%cPaste this into your CONFIG block (replace the existing VENUES: {...} line):\n\n" + output, "font-family:monospace");
+    return venues;
+  };
+
+  window.clearGeoCache = function () {
+    Object.keys(localStorage)
+      .filter(k => k.startsWith(GEO_CACHE_PREFIX))
+      .forEach(k => localStorage.removeItem(k));
+    console.log("Geocode cache cleared. Reload the page to re-fetch coordinates.");
+  };
 
   // ── Fetch events from Google Calendar API ─────────────────────────────────
   async function fetchEvents() {
