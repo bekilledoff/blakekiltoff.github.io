@@ -41,6 +41,18 @@
       color: #9ca3af;
       white-space: nowrap;
     }
+    .report-btn {
+      font-size: 0.72rem;
+      color: #9ca3af;
+      text-decoration: none;
+      border: 1px solid #e5e7eb;
+      border-radius: 999px;
+      padding: 3px 10px;
+      transition: color 0.12s, border-color 0.12s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .report-btn:hover { color: #dc2626; border-color: #fca5a5; }
 
     /* ── Filter Bar ── */
     .filter-bar {
@@ -358,6 +370,36 @@
     #config-banner code { color: #b45309; background: #fef3c7; padding: 1px 5px; border-radius: 3px; }
     #config-banner a { color: #b45309; }
 
+    /* ── Sidebar legend ── */
+    .sidebar-legend {
+      padding: 10px 16px;
+      border-bottom: 1px solid #f0f0f0;
+      background: #fafafa;
+      flex-shrink: 0;
+    }
+    .sidebar-legend-title {
+      font-size: 0.64rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #9ca3af;
+      margin-bottom: 7px;
+    }
+    .sidebar-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.75rem;
+      color: #374151;
+      padding: 2px 0;
+    }
+    .sidebar-legend-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      border: 1.5px solid rgba(0,0,0,0.12);
+    }
+
     /* ── Category dot in sidebar cards ── */
     .card-top { display: flex; align-items: flex-start; gap: 8px; }
     .cat-dot {
@@ -559,6 +601,7 @@
   <span class="mic-icon">🎤</span>
   <h1>Comedy Open Mics</h1>
   <span class="event-count" id="event-count">Loading…</span>
+  <a href="GOOGLE_FORM_URL_HERE" target="_blank" class="report-btn">⚑ Report an issue</a>
 </header>
 
 <div class="filter-bar">
@@ -598,7 +641,9 @@
 
 <div class="main">
   <div class="sidebar-wrap" id="sidebar-wrap">
-    <div class="sidebar" id="sidebar"></div>
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-legend" id="sidebar-legend"></div>
+    </div>
     <button class="sidebar-toggle" id="sidebar-toggle" title="Toggle list">◀</button>
   </div>
   <div id="map"></div>
@@ -795,32 +840,33 @@
     `;
   }
 
-  // ── Render floating map legend ─────────────────────────────────────────────
+  // ── Render sidebar legend ─────────────────────────────────────────────────
+  // Reads directly from CONFIG.LEGEND — update that object and the legend
+  // updates automatically on next page load, no other changes needed.
   function renderLegend() {
     const legend = CONFIG.LEGEND || {};
     const entries = Object.entries(legend);
-    if (!entries.length) return;
+    const container = document.getElementById("sidebar-legend");
+    if (!container) return;
 
-    // Only show legend entries for colors actually used in loaded events
-    const usedColors = new Set(
-      allEvents.map(ev => ev.colorId && GCAL_COLORS[ev.colorId] ? GCAL_COLORS[ev.colorId].name : null)
-    );
+    if (!entries.length) {
+      container.style.display = "none";
+      return;
+    }
 
-    const rows = entries
-      .filter(([name]) => usedColors.has(name))
-      .map(([name, label]) => {
-        const hex = Object.values(GCAL_COLORS).find(c => c.name === name)?.hex || DEFAULT_PIN_COLOR;
-        return `<div class="legend-item">
-          <span class="legend-dot" style="background:${hex}"></span>${label}
-        </div>`;
-      }).join("");
+    const rows = entries.map(([name, label]) => {
+      const hex = Object.values(GCAL_COLORS).find(c => c.name === name)?.hex || DEFAULT_PIN_COLOR;
+      return `<div class="sidebar-legend-item">
+        <span class="sidebar-legend-dot" style="background:${hex}"></span>${label}
+      </div>`;
+    }).join("");
 
-    if (!rows) return;
+    // Add default entry for uncategorized events
+    const defaultRow = `<div class="sidebar-legend-item">
+      <span class="sidebar-legend-dot" style="background:${DEFAULT_PIN_COLOR}"></span>Open mic (uncategorized)
+    </div>`;
 
-    const div = document.createElement("div");
-    div.id = "map-legend";
-    div.innerHTML = `<div class="legend-title">Venue type</div>${rows}`;
-    map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(div);
+    container.innerHTML = `<div class="sidebar-legend-title">Venue type</div>${rows}${defaultRow}`;
   }
 
   // ── Render map markers ────────────────────────────────────────────────────
@@ -1075,7 +1121,6 @@
     hideOverlay();
     setupFilters();
     applyFilters();
-    renderLegend();
   }
 
   // ── Sidebar collapse toggle ───────────────────────────────────────────────
@@ -1088,6 +1133,9 @@
     // Let the map resize after the CSS transition completes
     setTimeout(() => google.maps.event.trigger(map, "resize"), 260);
   });
+
+  // Render legend immediately — only needs CONFIG, no API calls required
+  renderLegend();
 
   // ── Google Maps init callback ─────────────────────────────────────────────
   window.initMap = function () {
