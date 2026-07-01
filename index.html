@@ -1281,30 +1281,13 @@
   }
 
   // ── Mobile height fix ────────────────────────────────────────────────────
-  // When embedded in an iframe (e.g. Google Sites), the viewport-filling layout
-  // doesn't work — use a scrollable layout instead so the host page auto-sizes.
-  const IN_IFRAME = (function() { try { return window.self !== window.top; } catch(e) { return true; } })();
-
+  // 100vh can exceed the actual visible area on mobile browsers; use
+  // window.innerHeight so the layout fills exactly the visible screen.
   function fixMobileHeight() {
-    if (!isMobile()) { document.body.style.height = ""; return; }
-    if (IN_IFRAME) {
-      // Scrollable iframe layout: map fixed height, list flows below
-      document.body.style.height = "auto";
-      document.body.style.overflow = "auto";
-      document.body.style.minHeight = "";
-      const mapEl = document.getElementById("map");
-      const sideEl = document.getElementById("sidebar-wrap");
-      const handleEl = document.getElementById("resize-handle");
-      if (mapEl)    { mapEl.style.flex = "none"; mapEl.style.height = "70vw"; mapEl.style.minHeight = "240px"; mapEl.style.maxHeight = "360px"; }
-      if (sideEl)   { sideEl.style.flex = "none"; sideEl.style.height = "auto"; sideEl.style.minHeight = ""; sideEl.style.overflow = "visible"; }
-      if (handleEl) { handleEl.style.display = "none"; }
-      // Sidebar inner: let it grow to natural height (no overflow clipping)
-      const sidebar = document.getElementById("sidebar");
-      if (sidebar)  { sidebar.style.height = "auto"; sidebar.style.overflowY = "visible"; }
-    } else {
-      // Full-screen layout: fill exactly the visible window height
+    if (window.innerWidth < 640) {
       document.body.style.height = window.innerHeight + "px";
-      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.height = "";
     }
   }
   fixMobileHeight();
