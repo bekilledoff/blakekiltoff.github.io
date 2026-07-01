@@ -483,29 +483,32 @@
       .report-btn { display: none; }
       .event-count { font-size: 0.72rem; }
 
-      /* Filter bar: single scrollable row, no wrapping */
+      /* Filter bar: single horizontally scrollable row — no wrapping at any level */
       .filter-bar {
         flex-wrap: nowrap;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
         padding: 6px 12px;
-        gap: 8px;
+        gap: 6px;
+        align-items: center;
       }
       .filter-bar::-webkit-scrollbar { display: none; }
       .filter-label { display: none; }
       .divider { display: none; }
-      .pill { padding: 6px 13px; font-size: 0.78rem; touch-action: manipulation; }
-      .dual-range { width: 90px; }
-      .time-slider-label { min-width: 75px; font-size: 0.72rem; }
+      .filter-group { flex-wrap: nowrap; flex-shrink: 0; gap: 4px; }
+      .pill { padding: 6px 13px; font-size: 0.78rem; touch-action: manipulation; flex-shrink: 0; }
+      .dual-range { width: 90px; flex-shrink: 0; }
+      .time-slider-label { min-width: 72px; font-size: 0.72rem; white-space: nowrap; }
       .time-slider-wrap { gap: 6px; flex-shrink: 0; }
 
-      /* Stack map above, list below */
+      /* Map on top, list panel below */
       .main { flex-direction: column; }
-      #map { flex: 1; min-height: 0; }
+      #map { order: -1; flex: 1; min-height: 0; }  /* force map above sidebar */
 
-      /* List panel slides up from bottom */
+      /* List panel at bottom */
       .sidebar-wrap {
+        order: 1;
         width: 100% !important;
         height: 40vh;
         flex-shrink: 0;
@@ -515,7 +518,7 @@
       }
       .sidebar-wrap.collapsed {
         width: 100% !important;
-        height: 32px;
+        height: 36px;
       }
       .sidebar {
         width: 100% !important;
@@ -528,39 +531,43 @@
         overflow: hidden;
         pointer-events: none;
       }
-      /* Show handle strip when collapsed so user knows list is there */
-      .sidebar-wrap.collapsed::before {
-        content: "▲ Show list";
-        display: block;
-        height: 32px;
-        line-height: 32px;
-        text-align: center;
-        font-size: 0.7rem;
-        font-weight: 700;
-        letter-spacing: 0.04em;
-        color: #6b7280;
-        pointer-events: none;
-      }
 
-      /* Reposition toggle: drawer handle at top-center of panel */
+      /* Drawer handle: tab at top-center of list panel */
       .sidebar-toggle {
         right: auto !important;
         top: -14px !important;
         left: 50% !important;
         transform: translateX(-50%) !important;
-        width: 44px;
+        width: 48px;
         height: 26px;
         border-radius: 999px;
-        font-size: 0.6rem;
+        font-size: 0.65rem;
+      }
+      /* Collapsed: show a full-width tap target with "Show list" */
+      .sidebar-wrap.collapsed {
+        cursor: pointer;
+        background: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-top: 2px solid #e5e7eb;
+      }
+      .sidebar-wrap.collapsed::after {
+        content: "▲  Show list";
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        color: #6b7280;
+        pointer-events: none;
       }
       .sidebar-wrap.collapsed .sidebar-toggle { display: none; }
 
-      /* Narrower info window */
+      /* Narrower info window on small screens */
       .iw-outer { width: 220px; }
       .iw-description { max-height: 120px; }
 
-      /* Bigger event cards for touch */
-      .event-card { padding: 14px 14px; }
+      /* Bigger cards for touch */
+      .event-card { padding: 14px; }
     }
   </style>
 </head>
