@@ -1281,13 +1281,30 @@
   }
 
   // ── Mobile height fix ────────────────────────────────────────────────────
-  // 100vh inside an iframe can exceed the actual visible area; use
-  // window.innerHeight instead so the layout fills exactly the visible screen.
+  // When embedded in an iframe (e.g. Google Sites), the viewport-filling layout
+  // doesn't work — use a scrollable layout instead so the host page auto-sizes.
+  const IN_IFRAME = (function() { try { return window.self !== window.top; } catch(e) { return true; } })();
+
   function fixMobileHeight() {
-    if (window.innerWidth < 640) {
-      document.body.style.height = window.innerHeight + "px";
+    if (!isMobile()) { document.body.style.height = ""; return; }
+    if (IN_IFRAME) {
+      // Scrollable iframe layout: map fixed height, list flows below
+      document.body.style.height = "auto";
+      document.body.style.overflow = "auto";
+      document.body.style.minHeight = "";
+      const mapEl = document.getElementById("map");
+      const sideEl = document.getElementById("sidebar-wrap");
+      const handleEl = document.getElementById("resize-handle");
+      if (mapEl)    { mapEl.style.flex = "none"; mapEl.style.height = "70vw"; mapEl.style.minHeight = "240px"; mapEl.style.maxHeight = "360px"; }
+      if (sideEl)   { sideEl.style.flex = "none"; sideEl.style.height = "auto"; sideEl.style.minHeight = ""; sideEl.style.overflow = "visible"; }
+      if (handleEl) { handleEl.style.display = "none"; }
+      // Sidebar inner: let it grow to natural height (no overflow clipping)
+      const sidebar = document.getElementById("sidebar");
+      if (sidebar)  { sidebar.style.height = "auto"; sidebar.style.overflowY = "visible"; }
     } else {
-      document.body.style.height = "";
+      // Full-screen layout: fill exactly the visible window height
+      document.body.style.height = window.innerHeight + "px";
+      document.body.style.overflow = "hidden";
     }
   }
   fixMobileHeight();
@@ -1403,20 +1420,3 @@
       zoomControl: true,               // add back only zoom
       zoomControlOptions: {
         position: google.maps.ControlPosition.RIGHT_BOTTOM,
-      },
-      gestureHandling: "greedy",
-      styles: [
-        // Hide most POIs and transit clutter
-        { featureType: "poi", stylers: [{ visibility: "off" }] },
-        { featureType: "transit", stylers: [{ visibility: "off" }] },
-        { featureType: "road", elementType: "labels.icon", stylers: [{ visibility: "off" }] },
-        // Subtle color palette
-        { featureType: "water", elementType: "geometry", stylers: [{ color: "#c9e8f5" }] },
-        { featureType: "landscape", elementType: "geometry", stylers: [{ color: "#f5f5f5" }] },
-        { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#e0e0e0" }] },
-        { featureType: "road.arterial", elementType: "geometry", stylers: [{ color: "#ebebeb" }] },
-        { featureType: "road.local", elementType: "geometry", stylers: [{ color: "#f5f5f5" }] },
-        { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#555" }] },
-        { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#888" }] },
-      ],
-    });
