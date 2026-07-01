@@ -475,6 +475,9 @@
     .day-5 { background: #fff7ed; color: #ea580c; }
     .day-6 { background: #fdf2f8; color: #db2777; }
 
+    /* ── Resize handle (hidden on desktop) ── */
+    .resize-handle { display: none; }
+
     /* ── Mobile ── */
     @media (max-width: 639px) {
       /* Compact header */
@@ -483,7 +486,7 @@
       .report-btn { display: none; }
       .event-count { font-size: 0.72rem; }
 
-      /* Filter bar: single horizontally scrollable row — no wrapping at any level */
+      /* Filter bar: single horizontally scrollable row */
       .filter-bar {
         flex-wrap: nowrap;
         overflow-x: auto;
@@ -502,24 +505,67 @@
       .time-slider-label { min-width: 72px; font-size: 0.72rem; white-space: nowrap; }
       .time-slider-wrap { gap: 6px; flex-shrink: 0; }
 
-      /* Map on top, list panel below */
-      .main { flex-direction: column; }
-      #map { order: -1; flex: 1; min-height: 0; }  /* force map above sidebar */
+      /* Stack: map on top, resize handle, list below — all share available height */
+      .main { flex-direction: column; overflow: hidden; }
 
-      /* List panel at bottom */
-      .sidebar-wrap {
-        order: 1;
-        width: 100% !important;
-        height: 40vh;
+      /* Map: top section, starts at 55% of main height */
+      #map { order: 1; flex: 55 1 0; min-height: 80px; }
+
+      /* Draggable resize handle */
+      .resize-handle {
+        order: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         flex-shrink: 0;
-        border-top: 2px solid #e5e7eb;
+        height: 22px;
+        background: #f3f4f6;
+        border-top: 1px solid #e5e7eb;
+        border-bottom: 1px solid #e5e7eb;
+        cursor: ns-resize;
+        touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
+        z-index: 5;
+      }
+      .resize-handle::before {
+        content: "";
+        width: 36px;
+        height: 4px;
+        border-radius: 2px;
+        background: #c0c7d0;
+      }
+
+      /* List panel: bottom section, starts at 45% of main height */
+      .sidebar-wrap {
+        order: 3;
+        width: 100% !important;
+        flex: 45 1 0;
+        min-height: 60px;
+        height: auto !important;
         overflow: visible;
-        transition: height 0.25s ease;
+        border-top: none;
+        transition: none;
       }
       .sidebar-wrap.collapsed {
         width: 100% !important;
-        height: 36px;
+        flex: none !important;
+        height: 36px !important;
+        cursor: pointer;
       }
+      .sidebar-wrap.collapsed::after {
+        content: "▲  Show list";
+        display: block;
+        text-align: center;
+        line-height: 36px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        color: #6b7280;
+      }
+      .sidebar-wrap.collapsed ~ .resize-handle,
+      .resize-handle:has(~ .sidebar-wrap.collapsed) { display: none; }
+
       .sidebar {
         width: 100% !important;
         height: 100%;
@@ -530,39 +576,25 @@
         transform: none !important;
         overflow: hidden;
         pointer-events: none;
+        visibility: hidden;
       }
 
-      /* Drawer handle: tab at top-center of list panel */
+      /* Sidebar toggle: positioned as a pill inside the list header area */
       .sidebar-toggle {
-        right: auto !important;
-        top: -14px !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-        width: 48px;
-        height: 26px;
+        position: absolute;
+        right: 12px !important;
+        top: 8px !important;
+        left: auto !important;
+        transform: none !important;
+        width: auto;
+        height: 24px;
+        padding: 0 10px;
         border-radius: 999px;
         font-size: 0.65rem;
       }
-      /* Collapsed: show a full-width tap target with "Show list" */
-      .sidebar-wrap.collapsed {
-        cursor: pointer;
-        background: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-top: 2px solid #e5e7eb;
-      }
-      .sidebar-wrap.collapsed::after {
-        content: "▲  Show list";
-        font-size: 0.72rem;
-        font-weight: 700;
-        letter-spacing: 0.04em;
-        color: #6b7280;
-        pointer-events: none;
-      }
       .sidebar-wrap.collapsed .sidebar-toggle { display: none; }
 
-      /* Narrower info window on small screens */
+      /* Narrower info window */
       .iw-outer { width: 220px; }
       .iw-description { max-height: 120px; }
 
@@ -743,6 +775,7 @@
     <button class="sidebar-toggle" id="sidebar-toggle" title="Toggle list">◀</button>
   </div>
   <div id="map"></div>
+  <div id="resize-handle" class="resize-handle"></div>
 </div>
 
 <script>
@@ -1248,36 +1281,98 @@
 
   function setToggleLabel(collapsed) {
     const btn = document.getElementById("sidebar-toggle");
-    btn.textContent = isMobile() ? (collapsed ? "" : "▼") : (collapsed ? "▶" : "◀");
+    btn.textContent = isMobile() ? (collapsed ? "" : "Hide list ▼") : (collapsed ? "▶" : "◀");
     btn.title = collapsed ? "Show list" : "Hide list";
   }
 
   document.getElementById("sidebar-toggle").addEventListener("click", () => {
     const wrap = document.getElementById("sidebar-wrap");
+    const mapEl = document.getElementById("map");
     const collapsed = wrap.classList.toggle("collapsed");
+    if (!collapsed) {
+      // Restore flex sizing when expanding (clear any inline heights from drag)
+      wrap.style.flex = "";
+      wrap.style.height = "";
+      if (mapEl) { mapEl.style.flex = ""; mapEl.style.height = ""; }
+    }
     setToggleLabel(collapsed);
-    setTimeout(() => google.maps.event.trigger(map, "resize"), 260);
+    setTimeout(() => google.maps.event.trigger(map, "resize"), 30);
   });
 
-  // On mobile, tapping the collapsed strip expands the list
+  // Tapping the collapsed strip expands the list
   document.getElementById("sidebar-wrap").addEventListener("click", e => {
     const wrap = document.getElementById("sidebar-wrap");
-    if (isMobile() && wrap.classList.contains("collapsed") && e.target === wrap) {
+    if (isMobile() && wrap.classList.contains("collapsed")) {
       wrap.classList.remove("collapsed");
+      wrap.style.flex = "";
+      wrap.style.height = "";
+      const mapEl = document.getElementById("map");
+      if (mapEl) { mapEl.style.flex = ""; mapEl.style.height = ""; }
       setToggleLabel(false);
-      setTimeout(() => google.maps.event.trigger(map, "resize"), 260);
+      setTimeout(() => google.maps.event.trigger(map, "resize"), 30);
     }
   });
 
-  // Set correct initial arrow on mobile
   setToggleLabel(false);
 
-  // Reflow on orientation change / resize
   window.addEventListener("resize", () => {
     const wrap = document.getElementById("sidebar-wrap");
     if (!wrap.classList.contains("collapsed")) setToggleLabel(false);
     if (map) setTimeout(() => google.maps.event.trigger(map, "resize"), 100);
   });
+
+  // ── Resize handle (mobile only) ───────────────────────────────────────────
+  (function () {
+    const handle = document.getElementById("resize-handle");
+    if (!handle) return;
+    const mainEl  = document.querySelector(".main");
+    const mapEl   = document.getElementById("map");
+    const sideEl  = document.getElementById("sidebar-wrap");
+
+    let startY, startMapH, startSideH;
+
+    function getY(e) { return e.touches ? e.touches[0].clientY : e.clientY; }
+
+    function onStart(e) {
+      if (!isMobile()) return;
+      startY     = getY(e);
+      startMapH  = mapEl.getBoundingClientRect().height;
+      startSideH = sideEl.getBoundingClientRect().height;
+      // Switch from flex-grow to fixed heights during drag
+      mapEl.style.flex  = "none";
+      mapEl.style.height = startMapH + "px";
+      sideEl.style.flex = "none";
+      sideEl.style.height = startSideH + "px";
+      window.addEventListener("mousemove", onMove);
+      window.addEventListener("touchmove", onMove, { passive: false });
+      window.addEventListener("mouseup",   onEnd);
+      window.addEventListener("touchend",  onEnd);
+      e.preventDefault();
+    }
+
+    function onMove(e) {
+      e.preventDefault();
+      const dy = getY(e) - startY;
+      const mainH = mainEl.getBoundingClientRect().height;
+      const handleH = handle.getBoundingClientRect().height;
+      const available = mainH - handleH;
+      const newMapH  = Math.min(Math.max(80,  startMapH  + dy), available - 60);
+      const newSideH = Math.min(Math.max(60,  startSideH - dy), available - 80);
+      mapEl.style.height  = newMapH  + "px";
+      sideEl.style.height = newSideH + "px";
+      if (map) google.maps.event.trigger(map, "resize");
+    }
+
+    function onEnd() {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("touchmove", onMove);
+      window.removeEventListener("mouseup",   onEnd);
+      window.removeEventListener("touchend",  onEnd);
+    }
+
+    handle.addEventListener("mousedown",  onStart);
+    handle.addEventListener("touchstart", onStart, { passive: false });
+  })();
 
   // Render legend immediately — only needs CONFIG, no API calls required
   renderLegend();
