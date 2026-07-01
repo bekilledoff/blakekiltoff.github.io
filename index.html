@@ -179,6 +179,14 @@
       color: #fff;
       font-weight: 600;
     }
+    .tag-pill { display: flex; align-items: center; gap: 5px; }
+    .tag-pill-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      border: 1.5px solid rgba(0,0,0,0.15);
+    }
+    .tag-pill.active .tag-pill-dot { border-color: rgba(255,255,255,0.5); }
     .divider {
       width: 1px;
       height: 16px;
@@ -795,11 +803,58 @@
     // Each entry has a label (shown in the legend/cards) and a hex color for the pin.
     // Events with no matching tag show as the default blue dot with no label.
     LEGEND: {
-      "#prebooked": { label: "Showcase (Pre-Booked, No Drop Ins)",          hex: "#d50000" },
-      "#opensignups":  { label: "Open Signups (In Person Only)",           hex: "#039be5" },
-      "#mixedsignups":     { label: "Online & In Person Signups", hex: "#33b679" },
+      "#showcase": { label: "Showcase",          hex: "#d50000" },
+      "#barshow":  { label: "Bar show",           hex: "#039be5" },
+      "#cafe":     { label: "Coffee shop / café", hex: "#33b679" },
+      "#dropin":   { label: "Free / drop-in mic", hex: "#f6c026" },
+      "#club":     { label: "Club show",          hex: "#8e24aa" },
+      "#other":    { label: "Other",              hex: "#616161" },
     },
   };
+
+  // ── STANDARD EVENT DESCRIPTION TEMPLATE ────────────────────────────────────
+  //
+  // Use this template verbatim when creating Google Calendar events manually,
+  // via Google Forms automation, or API calls. Field labels are case-sensitive
+  // and must match exactly so the site can parse and display them correctly.
+  //
+  // The Google Calendar event itself should have:
+  //   Title:    Venue / show name (e.g. "Tacoma Comedy Club Downtown")
+  //   Location: Full street address (e.g. "933 Market St, Tacoma, WA 98402")
+  //   Time:     Start time of the show (recurring events are fully supported)
+  //
+  // Description body — copy/paste and fill in each field:
+  // ──────────────────────────────────────────────────────────────────────────
+  // Location: [full street address, City, ST ZIP]
+  // Sign-up/Start: [sign-up method and time] / [show start time]
+  // Frequency: [weekly | biweekly | monthly, Nth Weekday], [Day of week]
+  // Note: [optional — sign-up details, format notes, special rules, etc.]
+  // Social: [Facebook URL], [Instagram URL], [website URL]
+  // Host: [name, or "rotating"]
+  // Wheelchair Accessible: [Yes | No | Unknown]
+  // #tag
+  // ──────────────────────────────────────────────────────────────────────────
+  //
+  // Example (Tacoma Comedy Club):
+  //   Location: 933 Market St, Tacoma, WA 98402
+  //   Sign-up/Start: online or in-person 6pm / 7pm
+  //   Frequency: weekly, Wednesday
+  //   Note: Sign-up online by the 15th of the month before. In-person sign-ups for limited bucket spots.
+  //   Social: https://facebook.com/tacomacomedy, https://instagram.com/tacomacomedyclub/
+  //   Host: rotating
+  //   Wheelchair Accessible: Yes
+  //   #barshow
+  //
+  // Available #tags (map pin color + filter label):
+  //   #showcase  →  Showcase (red)
+  //   #barshow   →  Bar show (blue)
+  //   #cafe      →  Coffee shop / café (green)
+  //   #dropin    →  Free / drop-in mic (yellow)
+  //   #club      →  Club show (purple)
+  //   #other     →  Other (gray)
+  //
+  // Add new tags by adding an entry to CONFIG.LEGEND above.
+  // ──────────────────────────────────────────────────────────────────────────
 </script>
 <!-- ══════════════════════════════════════════ -->
 
@@ -860,6 +915,10 @@
     </div>
     <span class="time-slider-label" id="time-slider-label">All times</span>
   </div>
+
+  <div class="divider" id="tag-divider" style="display:none"></div>
+  <span class="filter-label" id="tag-filter-label" style="display:none">Type</span>
+  <div class="filter-group" id="tag-filters"></div>
 </div>
 
 <div class="main">
@@ -884,6 +943,7 @@
   let activeRange = 7;
   let activeTimeMin = 0;   // hours (0–24)
   let activeTimeMax = 24;
+  let activeTags = new Set(); // empty = show all tag types
 
   const DAY_SHORT = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
@@ -975,6 +1035,31 @@
       .trim();
   }
 
+  // Format cleaned description: bold subheadings and ensure line breaks between them
+  const DESC_HEADINGS = [
+    "Wheelchair Accessible", // must come before single-word variants
+    "Sign-up/Start",
+    "Sign-up",
+    "Location",
+    "Frequency",
+    "Notes",
+    "Note",
+    "Social",
+    "Host",
+  ];
+
+  function formatDescription(text) {
+    if (!text) return text;
+    // Insert a newline before each heading (if not already at line start), then bold it
+    let result = text;
+    DESC_HEADINGS.forEach(h => {
+      const re = new RegExp(`(?<![\\w])${escapeRegex(h)}:`, 'gi');
+      result = result.replace(re, match => `\n<strong>${match}</strong>`);
+    });
+    // Collapse excessive blank lines produced by the replacements
+    return result.replace(/\n{3,}/g, '\n\n').trim();
+  }
+
   // ── Hashtag category helpers ──────────────────────────────────────────────
   function escapeRegex(s) {
     return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -1009,6 +1094,7 @@
       if (activeDay !== "all" && start.getDay() !== parseInt(activeDay)) return false;
       const h = start.getHours() + start.getMinutes() / 60;
       if (h < activeTimeMin || h > activeTimeMax) return false;
+      if (activeTags.size > 0 && !activeTags.has(ev.tag)) return false;
       return true;
     });
   }
@@ -1056,7 +1142,7 @@
 
   // ── Build info window HTML ─────────────────────────────────────────────────
   function buildInfoWindowContent(ev) {
-    const desc = ev.description;  // already cleaned and tag-stripped during parsing
+    const desc = formatDescription(ev.description);  // cleaned, tag-stripped, and formatted
     const { hex, label } = getEventColor(ev);
     const categoryBadge = label
       ? `<span style="display:inline-flex;align-items:center;gap:5px;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;margin-bottom:4px;">
@@ -1223,6 +1309,35 @@
     minEl.addEventListener("input", onSliderChange);
     maxEl.addEventListener("input", onSliderChange);
     updateSliderUI();
+
+    // Tag (type) pills — built dynamically from CONFIG.LEGEND so new tags appear automatically
+    const legend = CONFIG.LEGEND || {};
+    const tagEntries = Object.entries(legend);
+    const tagContainer = document.getElementById("tag-filters");
+    const tagDivider   = document.getElementById("tag-divider");
+    const tagLabel     = document.getElementById("tag-filter-label");
+
+    if (tagEntries.length && tagContainer) {
+      if (tagDivider) tagDivider.style.display = "";
+      if (tagLabel)   tagLabel.style.display   = "";
+      tagEntries.forEach(([tag, { label, hex }]) => {
+        const btn = document.createElement("button");
+        btn.className = "pill tag-pill";
+        btn.dataset.tag = tag;
+        btn.innerHTML = `<span class="tag-pill-dot" style="background:${hex}"></span>${label}`;
+        btn.addEventListener("click", () => {
+          if (activeTags.has(tag)) {
+            activeTags.delete(tag);
+            btn.classList.remove("active");
+          } else {
+            activeTags.add(tag);
+            btn.classList.add("active");
+          }
+          applyFilters();
+        });
+        tagContainer.appendChild(btn);
+      });
+    }
   }
 
   // ── Geocode an address ────────────────────────────────────────────────────
@@ -1533,22 +1648,22 @@
     <div class="modal-title" id="modal-title">Feedback &amp; Questions</div>
     <div class="modal-subtitle">Choose a topic below — each opens a short Google Form.</div>
     <div class="modal-cards">
-      <a href="https://docs.google.com/forms/d/e/1FAIpQLSdfUQ19OYeMk7J6q3t0IuCjwD2X15YXcbO8cKr7r9yQ-zJogw/viewform?usp=publish-editor" target="_blank" class="modal-card" rel="noopener">
+      <a href="PLACEHOLDER_TAKEDOWN_URL" target="_blank" class="modal-card" rel="noopener">
         <span class="modal-card-icon">🚫</span>
         <span class="modal-card-title">Takedown Request</span>
         <span class="modal-card-desc">Ask us to remove an event or listing.</span>
       </a>
-      <a href="https://docs.google.com/forms/d/e/1FAIpQLSdfUQ19OYeMk7J6q3t0IuCjwD2X15YXcbO8cKr7r9yQ-zJogw/viewform?usp=publish-editor" target="_blank" class="modal-card" rel="noopener">
+      <a href="PLACEHOLDER_REVISION_URL" target="_blank" class="modal-card" rel="noopener">
         <span class="modal-card-icon">✏️</span>
         <span class="modal-card-title">Revision Request</span>
         <span class="modal-card-desc">Correct details on an existing event.</span>
       </a>
-      <a href="https://docs.google.com/forms/d/e/1FAIpQLSdfUQ19OYeMk7J6q3t0IuCjwD2X15YXcbO8cKr7r9yQ-zJogw/viewform?usp=publish-editor" target="_blank" class="modal-card" rel="noopener">
+      <a href="PLACEHOLDER_PROBLEM_URL" target="_blank" class="modal-card" rel="noopener">
         <span class="modal-card-icon">⚠️</span>
         <span class="modal-card-title">Report a Problem</span>
         <span class="modal-card-desc">Something broken or displaying wrong?</span>
       </a>
-      <a href="https://docs.google.com/forms/d/e/1FAIpQLSfFFVjOAegd5MGOCryZajzRaBoG-GNKKRp8OXJNnL5Hfp6wNg/viewform?usp=dialog" target="_blank" class="modal-card" rel="noopener">
+      <a href="PLACEHOLDER_SUBMIT_URL" target="_blank" class="modal-card" rel="noopener">
         <span class="modal-card-icon">➕</span>
         <span class="modal-card-title">Submit a New Mic</span>
         <span class="modal-card-desc">Add an open mic to the calendar.</span>
