@@ -508,8 +508,8 @@
       /* Stack: map on top, resize handle, list below — all share available height */
       .main { flex-direction: column; overflow: hidden; }
 
-      /* Map: top section, starts at 55% of main height */
-      #map { order: 1; flex: 55 1 0; min-height: 80px; }
+      /* Map: top section, starts at 62% of main height */
+      #map { order: 1; flex: 62 1 0; min-height: 80px; }
 
       /* Draggable resize handle */
       .resize-handle {
@@ -536,15 +536,19 @@
         background: #c0c7d0;
       }
 
-      /* List panel: bottom section, starts at 45% of main height */
+      /* List panel: bottom section, starts at 38% of main height */
       .sidebar-wrap {
         order: 3;
         width: 100% !important;
-        flex: 45 1 0;
+        flex: 38 1 0;
         min-height: 60px;
         height: auto !important;
         overflow: visible;
         border-top: none;
+        border: 1px solid #e5e7eb;
+        border-bottom: none;
+        border-radius: 10px 10px 0 0;
+        box-shadow: 0 -2px 8px rgba(0,0,0,0.06);
         transition: none;
       }
       .sidebar-wrap.collapsed {
@@ -1276,6 +1280,19 @@
     applyFilters();
   }
 
+  // ── Mobile height fix ────────────────────────────────────────────────────
+  // 100vh inside an iframe can exceed the actual visible area; use
+  // window.innerHeight instead so the layout fills exactly the visible screen.
+  function fixMobileHeight() {
+    if (window.innerWidth < 640) {
+      document.body.style.height = window.innerHeight + "px";
+    } else {
+      document.body.style.height = "";
+    }
+  }
+  fixMobileHeight();
+  window.addEventListener("resize", fixMobileHeight);
+
   // ── Sidebar collapse toggle ───────────────────────────────────────────────
   function isMobile() { return window.innerWidth < 640; }
 
@@ -1403,20 +1420,3 @@
         { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#888" }] },
       ],
     });
-    initApp();
-  };
-</script>
-
-<script>
-  (function () {
-    const key = CONFIG.GOOGLE_API_KEY === "YOUR_GOOGLE_API_KEY" ? "" : CONFIG.GOOGLE_API_KEY;
-    const s = document.createElement("script");
-    s.src = `https://maps.googleapis.com/maps/api/js?key=${key}&callback=initMap`;
-    s.async = true; s.defer = true;
-    s.onerror = () => showError("Failed to load Google Maps. Check that your API key has the <strong>Maps JavaScript API</strong> enabled.");
-    document.head.appendChild(s);
-  })();
-</script>
-
-</body>
-</html>
