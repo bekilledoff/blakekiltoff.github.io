@@ -53,6 +53,18 @@
       flex-shrink: 0;
     }
     .report-btn:hover { color: #dc2626; border-color: #fca5a5; }
+    .report-btn {
+      font-size: 0.72rem;
+      color: #9ca3af;
+      text-decoration: none;
+      border: 1px solid #e5e7eb;
+      border-radius: 999px;
+      padding: 3px 10px;
+      transition: color 0.12s, border-color 0.12s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .report-btn:hover { color: #dc2626; border-color: #fca5a5; }
 
     /* ── Filter Bar ── */
     .filter-bar {
@@ -563,18 +575,19 @@
       {              "lat": 47.3106152,              "lng": -122.5823922        }
     },
 
-    // Legend: map Google Calendar event colors to your category names.
-    // To categorize an event, right-click it in Google Calendar and pick a color.
-    // Available color names: tomato, flamingo, tangerine, banana, sage,
-    //   basil, peacock, blueberry, lavender, grape, graphite
-    // Events with no color set will show as the default blue dot with no label.
+    // Legend: define hashtag categories for your events.
+    // To categorize an event, add a hashtag anywhere in the event's description
+    // in Google Calendar (e.g. type "#showcase" at the end of the description).
+    // Tag names must be lowercase with no spaces and match the keys below exactly.
+    // Each entry has a label (shown in the legend/cards) and a hex color for the pin.
+    // Events with no matching tag show as the default blue dot with no label.
     LEGEND: {
-      "tomato":    "Showcase",
-      "peacock":   "Bar show",
-      "sage":      "Coffee shop / café",
-      "banana":    "Free / drop-in mic",
-      "grape":     "Club show",
-      "graphite":  "Other",
+      "#showcase": { label: "Showcase",          hex: "#d50000" },
+      "#barshow":  { label: "Bar show",           hex: "#039be5" },
+      "#cafe":     { label: "Coffee shop / café", hex: "#33b679" },
+      "#dropin":   { label: "Free / drop-in mic", hex: "#f6c026" },
+      "#club":     { label: "Club show",          hex: "#8e24aa" },
+      "#other":    { label: "Other",              hex: "#616161" },
     },
   };
 </script>
@@ -663,26 +676,13 @@
 
   const DAY_SHORT = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
-  // Google Calendar colorId → color name + hex
-  const GCAL_COLORS = {
-    "1":  { name: "lavender",  hex: "#7986cb" },
-    "2":  { name: "sage",      hex: "#33b679" },
-    "3":  { name: "grape",     hex: "#8e24aa" },
-    "4":  { name: "flamingo",  hex: "#e67c73" },
-    "5":  { name: "banana",    hex: "#f6c026" },
-    "6":  { name: "tangerine", hex: "#f5511d" },
-    "7":  { name: "peacock",   hex: "#039be5" },
-    "8":  { name: "graphite",  hex: "#616161" },
-    "9":  { name: "blueberry", hex: "#3f51b5" },
-    "10": { name: "basil",     hex: "#0b8043" },
-    "11": { name: "tomato",    hex: "#d50000" },
-  };
   const DEFAULT_PIN_COLOR = "#2563eb";
 
+  // Returns { hex, label } for an event based on its detected #tag
   function getEventColor(ev) {
-    if (ev.colorId && GCAL_COLORS[ev.colorId]) {
-      const { name, hex } = GCAL_COLORS[ev.colorId];
-      const label = (CONFIG.LEGEND || {})[name] || null;
+    const legend = CONFIG.LEGEND || {};
+    if (ev.tag && legend[ev.tag]) {
+      const { label, hex } = legend[ev.tag];
       return { hex, label };
     }
     return { hex: DEFAULT_PIN_COLOR, label: null };
@@ -764,6 +764,29 @@
       .trim();
   }
 
+  // ── Hashtag category helpers ──────────────────────────────────────────────
+  function escapeRegex(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  // Find which CONFIG.LEGEND hashtag (if any) appears in the raw description HTML
+  function findTag(rawHtml) {
+    const legend = CONFIG.LEGEND || {};
+    const text = rawHtml.replace(/<[^>]+>/g, ' '); // strip HTML for plain-text matching
+    for (const tag of Object.keys(legend)) {
+      const re = new RegExp(`(?:^|[\\s,])${escapeRegex(tag)}(?=[\\s,]|$)`, 'i');
+      if (re.test(text)) return tag;
+    }
+    return null;
+  }
+
+  // Remove a recognized tag from already-cleaned description text
+  function stripTagFromText(text, tag) {
+    if (!tag) return text;
+    const re = new RegExp(`\\s*${escapeRegex(tag)}\\s*`, 'gi');
+    return text.replace(re, '\n').replace(/\n{3,}/g, '\n\n').trim();
+  }
+
   // ── Filtering ──────────────────────────────────────────────────────────────
   function getFilteredEvents() {
     const now = new Date();
@@ -822,7 +845,7 @@
 
   // ── Build info window HTML ─────────────────────────────────────────────────
   function buildInfoWindowContent(ev) {
-    const desc = cleanDescription(ev.description);
+    const desc = ev.description;  // already cleaned and tag-stripped during parsing
     const { hex, label } = getEventColor(ev);
     const categoryBadge = label
       ? `<span style="display:inline-flex;align-items:center;gap:5px;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;margin-bottom:4px;">
@@ -854,8 +877,7 @@
       return;
     }
 
-    const rows = entries.map(([name, label]) => {
-      const hex = Object.values(GCAL_COLORS).find(c => c.name === name)?.hex || DEFAULT_PIN_COLOR;
+    const rows = entries.map(([tag, { label, hex }]) => {
       return `<div class="sidebar-legend-item">
         <span class="sidebar-legend-dot" style="background:${hex}"></span>${label}
       </div>`;
@@ -1094,17 +1116,21 @@
       return;
     }
 
-    const parsed = rawEvents.map(item => ({
-      id: item.id,
-      summary: item.summary || "Open Mic",
-      location: item.location || "",
-      description: item.description || "",
-      colorId: item.colorId || null,   // set by right-clicking event in Google Calendar
-      startDate: new Date(item.start?.dateTime || item.start?.date),
-      endDate:   new Date(item.end?.dateTime   || item.end?.date),
-      lat: null,
-      lng: null,
-    }));
+    const parsed = rawEvents.map(item => {
+      const rawDesc = item.description || "";
+      const tag = findTag(rawDesc);
+      return {
+        id: item.id,
+        summary: item.summary || "Open Mic",
+        location: item.location || "",
+        description: stripTagFromText(cleanDescription(rawDesc), tag),
+        tag: tag,
+        startDate: new Date(item.start?.dateTime || item.start?.date),
+        endDate:   new Date(item.end?.dateTime   || item.end?.date),
+        lat: null,
+        lng: null,
+      };
+    });
 
     showOverlay("Geocoding locations…");
     const batchSize = 5;
