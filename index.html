@@ -1420,3 +1420,37 @@
       zoomControl: true,               // add back only zoom
       zoomControlOptions: {
         position: google.maps.ControlPosition.RIGHT_BOTTOM,
+      },
+      gestureHandling: "greedy",
+      styles: [
+        // Hide most POIs and transit clutter
+        { featureType: "poi", stylers: [{ visibility: "off" }] },
+        { featureType: "transit", stylers: [{ visibility: "off" }] },
+        { featureType: "road", elementType: "labels.icon", stylers: [{ visibility: "off" }] },
+        // Subtle color palette
+        { featureType: "water", elementType: "geometry", stylers: [{ color: "#c9e8f5" }] },
+        { featureType: "landscape", elementType: "geometry", stylers: [{ color: "#f5f5f5" }] },
+        { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#e0e0e0" }] },
+        { featureType: "road.arterial", elementType: "geometry", stylers: [{ color: "#ebebeb" }] },
+        { featureType: "road.local", elementType: "geometry", stylers: [{ color: "#f5f5f5" }] },
+        { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#555" }] },
+        { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#888" }] },
+      ],
+    });
+    initApp();
+  };
+</script>
+
+<script>
+  (function () {
+    const key = CONFIG.GOOGLE_API_KEY === "YOUR_GOOGLE_API_KEY" ? "" : CONFIG.GOOGLE_API_KEY;
+    const s = document.createElement("script");
+    s.src = `https://maps.googleapis.com/maps/api/js?key=${key}&callback=initMap`;
+    s.async = true; s.defer = true;
+    s.onerror = () => showError("Failed to load Google Maps. Check that your API key has the <strong>Maps JavaScript API</strong> enabled.");
+    document.head.appendChild(s);
+  })();
+</script>
+
+</body>
+</html>
