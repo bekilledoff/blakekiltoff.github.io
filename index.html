@@ -53,18 +53,6 @@
       flex-shrink: 0;
     }
     .report-btn:hover { color: #dc2626; border-color: #fca5a5; }
-    .report-btn {
-      font-size: 0.72rem;
-      color: #9ca3af;
-      text-decoration: none;
-      border: 1px solid #e5e7eb;
-      border-radius: 999px;
-      padding: 3px 10px;
-      transition: color 0.12s, border-color 0.12s;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-    .report-btn:hover { color: #dc2626; border-color: #fca5a5; }
 
     /* ── Filter Bar ── */
     .filter-bar {
@@ -1077,7 +1065,7 @@
       + `&timeMin=${timeMin}&timeMax=${timeMax}`
       + `&singleEvents=true&orderBy=startTime&maxResults=250`;
 
-    const res = await fetch(url);
+    const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err?.error?.message || `HTTP ${res.status}`);
