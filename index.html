@@ -474,6 +474,94 @@
     .day-4 { background: #fffbeb; color: #d97706; }
     .day-5 { background: #fff7ed; color: #ea580c; }
     .day-6 { background: #fdf2f8; color: #db2777; }
+
+    /* ── Mobile ── */
+    @media (max-width: 639px) {
+      /* Compact header */
+      header { padding: 10px 14px; gap: 8px; }
+      header h1 { font-size: 0.95rem; }
+      .report-btn { display: none; }
+      .event-count { font-size: 0.72rem; }
+
+      /* Filter bar: single scrollable row, no wrapping */
+      .filter-bar {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding: 6px 12px;
+        gap: 8px;
+      }
+      .filter-bar::-webkit-scrollbar { display: none; }
+      .filter-label { display: none; }
+      .divider { display: none; }
+      .pill { padding: 6px 13px; font-size: 0.78rem; touch-action: manipulation; }
+      .dual-range { width: 90px; }
+      .time-slider-label { min-width: 75px; font-size: 0.72rem; }
+      .time-slider-wrap { gap: 6px; flex-shrink: 0; }
+
+      /* Stack map above, list below */
+      .main { flex-direction: column; }
+      #map { flex: 1; min-height: 0; }
+
+      /* List panel slides up from bottom */
+      .sidebar-wrap {
+        width: 100% !important;
+        height: 40vh;
+        flex-shrink: 0;
+        border-top: 2px solid #e5e7eb;
+        overflow: visible;
+        transition: height 0.25s ease;
+      }
+      .sidebar-wrap.collapsed {
+        width: 100% !important;
+        height: 32px;
+      }
+      .sidebar {
+        width: 100% !important;
+        height: 100%;
+        border-right: none;
+        transform: none !important;
+      }
+      .sidebar-wrap.collapsed .sidebar {
+        transform: none !important;
+        overflow: hidden;
+        pointer-events: none;
+      }
+      /* Show handle strip when collapsed so user knows list is there */
+      .sidebar-wrap.collapsed::before {
+        content: "▲ Show list";
+        display: block;
+        height: 32px;
+        line-height: 32px;
+        text-align: center;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        color: #6b7280;
+        pointer-events: none;
+      }
+
+      /* Reposition toggle: drawer handle at top-center of panel */
+      .sidebar-toggle {
+        right: auto !important;
+        top: -14px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: 44px;
+        height: 26px;
+        border-radius: 999px;
+        font-size: 0.6rem;
+      }
+      .sidebar-wrap.collapsed .sidebar-toggle { display: none; }
+
+      /* Narrower info window */
+      .iw-outer { width: 220px; }
+      .iw-description { max-height: 120px; }
+
+      /* Bigger event cards for touch */
+      .event-card { padding: 14px 14px; }
+    }
   </style>
 </head>
 <body>
@@ -926,7 +1014,18 @@
     if (selectedCardEl) selectedCardEl.classList.remove("selected");
     if (cardEl) {
       cardEl.classList.add("selected");
-      cardEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      // On mobile, expand list first so scrollIntoView works
+      const wrap = document.getElementById("sidebar-wrap");
+      if (isMobile() && wrap.classList.contains("collapsed")) {
+        wrap.classList.remove("collapsed");
+        setToggleLabel(false);
+        setTimeout(() => {
+          cardEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          google.maps.event.trigger(map, "resize");
+        }, 260);
+      } else {
+        cardEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
     }
     selectedCardEl = cardEl;
 
@@ -1138,14 +1237,39 @@
   }
 
   // ── Sidebar collapse toggle ───────────────────────────────────────────────
+  function isMobile() { return window.innerWidth < 640; }
+
+  function setToggleLabel(collapsed) {
+    const btn = document.getElementById("sidebar-toggle");
+    btn.textContent = isMobile() ? (collapsed ? "" : "▼") : (collapsed ? "▶" : "◀");
+    btn.title = collapsed ? "Show list" : "Hide list";
+  }
+
   document.getElementById("sidebar-toggle").addEventListener("click", () => {
     const wrap = document.getElementById("sidebar-wrap");
-    const btn  = document.getElementById("sidebar-toggle");
     const collapsed = wrap.classList.toggle("collapsed");
-    btn.textContent = collapsed ? "▶" : "◀";
-    btn.title = collapsed ? "Show list" : "Hide list";
-    // Let the map resize after the CSS transition completes
+    setToggleLabel(collapsed);
     setTimeout(() => google.maps.event.trigger(map, "resize"), 260);
+  });
+
+  // On mobile, tapping the collapsed strip expands the list
+  document.getElementById("sidebar-wrap").addEventListener("click", e => {
+    const wrap = document.getElementById("sidebar-wrap");
+    if (isMobile() && wrap.classList.contains("collapsed") && e.target === wrap) {
+      wrap.classList.remove("collapsed");
+      setToggleLabel(false);
+      setTimeout(() => google.maps.event.trigger(map, "resize"), 260);
+    }
+  });
+
+  // Set correct initial arrow on mobile
+  setToggleLabel(false);
+
+  // Reflow on orientation change / resize
+  window.addEventListener("resize", () => {
+    const wrap = document.getElementById("sidebar-wrap");
+    if (!wrap.classList.contains("collapsed")) setToggleLabel(false);
+    if (map) setTimeout(() => google.maps.event.trigger(map, "resize"), 100);
   });
 
   // Render legend immediately — only needs CONFIG, no API calls required
