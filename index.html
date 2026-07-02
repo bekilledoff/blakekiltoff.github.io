@@ -194,70 +194,6 @@
       flex-shrink: 0;
     }
 
-    /* ── Time range slider ── */
-    .time-slider-wrap {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-    }
-    .time-slider-label {
-      font-size: 0.72rem;
-      color: #374151;
-      white-space: nowrap;
-      min-width: 110px;
-    }
-    .dual-range {
-      position: relative;
-      width: 120px;
-      height: 18px;
-    }
-    .dual-range input[type=range] {
-      position: absolute;
-      width: 100%;
-      height: 4px;
-      top: 50%;
-      transform: translateY(-50%);
-      appearance: none;
-      -webkit-appearance: none;
-      background: transparent;
-      pointer-events: none;
-    }
-    .dual-range input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 14px; height: 14px;
-      border-radius: 50%;
-      background: #2563eb;
-      border: 2px solid #fff;
-      box-shadow: 0 0 0 1px #2563eb;
-      cursor: pointer;
-      pointer-events: all;
-    }
-    .dual-range input[type=range]::-moz-range-thumb {
-      width: 14px; height: 14px;
-      border-radius: 50%;
-      background: #2563eb;
-      border: 2px solid #fff;
-      box-shadow: 0 0 0 1px #2563eb;
-      cursor: pointer;
-      pointer-events: all;
-    }
-    .range-track {
-      position: absolute;
-      height: 4px;
-      top: 50%;
-      transform: translateY(-50%);
-      left: 0; right: 0;
-      background: #e5e7eb;
-      border-radius: 2px;
-      pointer-events: none;
-    }
-    .range-fill {
-      position: absolute;
-      height: 100%;
-      background: #2563eb;
-      border-radius: 2px;
-    }
-
     /* ── Main Layout ── */
     .main {
       display: flex;
@@ -603,9 +539,6 @@
       .divider { display: none; }
       .filter-group { flex-wrap: nowrap; flex-shrink: 0; gap: 4px; }
       .pill { padding: 6px 13px; font-size: 0.78rem; touch-action: manipulation; flex-shrink: 0; }
-      .dual-range { width: 90px; flex-shrink: 0; }
-      .time-slider-label { min-width: 72px; font-size: 0.72rem; white-space: nowrap; }
-      .time-slider-wrap { gap: 6px; flex-shrink: 0; }
 
       /* Stack: map on top, resize handle, list below — all share available height */
       .main { flex-direction: column; overflow: hidden; }
@@ -883,24 +816,12 @@
 
   <div class="divider"></div>
 
-  <span class="filter-label">Range</span>
+  <span class="filter-label">Upcoming Dates</span>
   <div class="filter-group" id="range-filters">
-    <button class="pill active" data-range="7">Next 7 days</button>
+    <button class="pill active" data-range="all">All</button>
+    <button class="pill" data-range="7">Next 7 days</button>
     <button class="pill" data-range="14">Next 14 days</button>
     <button class="pill" data-range="30">Next 30 days</button>
-    <button class="pill" data-range="all">All time</button>
-  </div>
-
-  <div class="divider"></div>
-
-  <div class="time-slider-wrap">
-    <span class="filter-label">Time</span>
-    <div class="dual-range" id="dual-range">
-      <div class="range-track"><div class="range-fill" id="range-fill"></div></div>
-      <input type="range" id="time-min" min="0" max="24" value="0" step="1">
-      <input type="range" id="time-max" min="0" max="24" value="24" step="1">
-    </div>
-    <span class="time-slider-label" id="time-slider-label">All times</span>
   </div>
 
   <div class="divider" id="tag-divider" style="display:none"></div>
@@ -927,9 +848,7 @@
   let map = null;
   let selectedCardEl = null;
   let activeDay = "all";
-  let activeRange = 7;
-  let activeTimeMin = 0;   // hours (0–24)
-  let activeTimeMax = 24;
+  let activeRange = null; // null = All (no cutoff)
   let activeTags = new Set(); // empty = show all tag types
 
   const DAY_SHORT = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
@@ -973,23 +892,6 @@
 
   function formatTime(date) {
     return date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
-  }
-
-  function fmtHour(h) {
-    if (h === 0 || h === 24) return h === 0 ? "12 AM" : "midnight";
-    if (h === 12) return "noon";
-    return h < 12 ? `${h} AM` : `${h - 12} PM`;
-  }
-
-  function updateSliderUI() {
-    const min = activeTimeMin, max = activeTimeMax;
-    const pct = v => (v / 24) * 100;
-    document.getElementById("range-fill").style.left  = pct(min) + "%";
-    document.getElementById("range-fill").style.width = (pct(max) - pct(min)) + "%";
-    const label = document.getElementById("time-slider-label");
-    label.textContent = (min === 0 && max === 24)
-      ? "All times"
-      : `${fmtHour(min)} – ${fmtHour(max)}`;
   }
 
   function dayBadge(date) {
@@ -1081,8 +983,6 @@
         if (start > cutoff) return false;
       }
       if (activeDay !== "all" && start.getDay() !== parseInt(activeDay)) return false;
-      const h = start.getHours() + start.getMinutes() / 60;
-      if (h < activeTimeMin || h > activeTimeMax) return false;
       if (activeTags.size > 0 && !activeTags.has(ev.tag)) return false;
       return true;
     });
@@ -1276,28 +1176,6 @@
         applyFilters();
       });
     });
-
-    // Time range slider
-    const minEl = document.getElementById("time-min");
-    const maxEl = document.getElementById("time-max");
-    const THUMB_GAP = 1; // minimum hours between handles
-
-    function onSliderChange() {
-      let lo = parseInt(minEl.value);
-      let hi = parseInt(maxEl.value);
-      if (lo > hi - THUMB_GAP) {
-        if (this === minEl) { lo = hi - THUMB_GAP; minEl.value = lo; }
-        else                { hi = lo + THUMB_GAP; maxEl.value = hi; }
-      }
-      activeTimeMin = lo;
-      activeTimeMax = hi;
-      updateSliderUI();
-      applyFilters();
-    }
-
-    minEl.addEventListener("input", onSliderChange);
-    maxEl.addEventListener("input", onSliderChange);
-    updateSliderUI();
 
     // Tag (type) pills — built dynamically from CONFIG.LEGEND so new tags appear automatically
     const legend = CONFIG.LEGEND || {};
