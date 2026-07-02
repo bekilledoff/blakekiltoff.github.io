@@ -685,20 +685,8 @@
         visibility: hidden;
       }
 
-      /* Sidebar toggle: positioned as a pill inside the list header area */
-      .sidebar-toggle {
-        position: absolute;
-        right: 12px !important;
-        top: 8px !important;
-        left: auto !important;
-        transform: none !important;
-        width: auto;
-        height: 24px;
-        padding: 0 10px;
-        border-radius: 999px;
-        font-size: 0.65rem;
-      }
-      .sidebar-wrap.collapsed .sidebar-toggle { display: none; }
+      /* Hide sidebar toggle on mobile — list is always visible and resizable */
+      .sidebar-toggle { display: none !important; }
 
       /* Narrower info window */
       .iw-outer { width: 220px; }
@@ -900,6 +888,7 @@
     <button class="pill active" data-range="7">Next 7 days</button>
     <button class="pill" data-range="14">Next 14 days</button>
     <button class="pill" data-range="30">Next 30 days</button>
+    <button class="pill" data-range="all">All time</button>
   </div>
 
   <div class="divider"></div>
@@ -1087,8 +1076,10 @@
     return allEvents.filter(ev => {
       const start = ev.startDate;
       if (start < now) return false;
-      const cutoff = new Date(now.getTime() + activeRange * 86400000);
-      if (start > cutoff) return false;
+      if (activeRange !== null) {
+        const cutoff = new Date(now.getTime() + activeRange * 86400000);
+        if (start > cutoff) return false;
+      }
       if (activeDay !== "all" && start.getDay() !== parseInt(activeDay)) return false;
       const h = start.getHours() + start.getMinutes() / 60;
       if (h < activeTimeMin || h > activeTimeMax) return false;
@@ -1281,7 +1272,7 @@
       btn.addEventListener("click", () => {
         document.querySelectorAll("#range-filters .pill").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
-        activeRange = parseInt(btn.dataset.range);
+        activeRange = btn.dataset.range === "all" ? null : parseInt(btn.dataset.range);
         applyFilters();
       });
     });
