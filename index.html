@@ -145,12 +145,42 @@
     .filter-bar {
       background: #fff;
       border-bottom: 1px solid #e5e7eb;
-      padding: 7px 16px;
+      padding: 7px 14px;
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .filter-toggle {
       display: flex;
       align-items: center;
       gap: 6px;
-      flex-wrap: wrap;
+      background: none;
+      border: 1px solid #d1d5db;
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-size: 0.76rem;
+      color: #374151;
+      cursor: pointer;
+      transition: background 0.12s, border-color 0.12s;
+    }
+    .filter-toggle:hover { background: #f3f4f6; border-color: #9ca3af; }
+    .filter-toggle.open  { background: #eff6ff; border-color: #93c5fd; color: #1d4ed8; }
+    .filter-caret { font-size: 0.55rem; margin-left: 2px; }
+    .filter-panel {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 10px 16px 12px;
       flex-shrink: 0;
+    }
+    .filter-panel.open { display: flex; }
+    .filter-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
     }
     .filter-label {
       font-size: 0.64rem;
@@ -158,7 +188,8 @@
       text-transform: uppercase;
       letter-spacing: 0.07em;
       color: #9ca3af;
-      margin-right: 1px;
+      min-width: 100px;
+      flex-shrink: 0;
     }
     .filter-group { display: flex; gap: 4px; flex-wrap: wrap; }
     .pill {
@@ -187,13 +218,6 @@
       border: 1.5px solid rgba(0,0,0,0.15);
     }
     .tag-pill.active .tag-pill-dot { border-color: rgba(255,255,255,0.5); }
-    .divider {
-      width: 1px;
-      height: 16px;
-      background: #e5e7eb;
-      flex-shrink: 0;
-    }
-
     /* ── Main Layout ── */
     .main {
       display: flex;
@@ -524,22 +548,6 @@
         flex-shrink: 0;
       }
 
-      /* Filter bar: single horizontally scrollable row */
-      .filter-bar {
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-        padding: 6px 12px;
-        gap: 6px;
-        align-items: center;
-      }
-      .filter-bar::-webkit-scrollbar { display: none; }
-      .filter-label { display: none; }
-      .divider { display: none; }
-      .filter-group { flex-wrap: nowrap; flex-shrink: 0; gap: 4px; }
-      .pill { padding: 6px 13px; font-size: 0.78rem; touch-action: manipulation; flex-shrink: 0; }
-
       /* Stack: map on top, resize handle, list below — all share available height */
       .main { flex-direction: column; overflow: hidden; }
 
@@ -802,31 +810,40 @@
 </header>
 
 <div class="filter-bar">
-  <span class="filter-label">Day</span>
-  <div class="filter-group" id="day-filters">
-    <button class="pill active" data-day="all">All</button>
-    <button class="pill" data-day="0">Sun</button>
-    <button class="pill" data-day="1">Mon</button>
-    <button class="pill" data-day="2">Tue</button>
-    <button class="pill" data-day="3">Wed</button>
-    <button class="pill" data-day="4">Thu</button>
-    <button class="pill" data-day="5">Fri</button>
-    <button class="pill" data-day="6">Sat</button>
+  <button class="filter-toggle" id="filter-toggle">
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" y1="4" x2="14" y2="4"/><line x1="4" y1="8" x2="12" y2="8"/><line x1="6" y1="12" x2="10" y2="12"/></svg>
+    Filters
+    <span class="filter-caret" id="filter-caret">▼</span>
+  </button>
+</div>
+
+<div class="filter-panel" id="filter-panel">
+  <div class="filter-row">
+    <span class="filter-label">Day</span>
+    <div class="filter-group" id="day-filters">
+      <button class="pill active" data-day="all">All</button>
+      <button class="pill" data-day="0">Sun</button>
+      <button class="pill" data-day="1">Mon</button>
+      <button class="pill" data-day="2">Tue</button>
+      <button class="pill" data-day="3">Wed</button>
+      <button class="pill" data-day="4">Thu</button>
+      <button class="pill" data-day="5">Fri</button>
+      <button class="pill" data-day="6">Sat</button>
+    </div>
   </div>
-
-  <div class="divider"></div>
-
-  <span class="filter-label">Upcoming Dates</span>
-  <div class="filter-group" id="range-filters">
-    <button class="pill active" data-range="all">All</button>
-    <button class="pill" data-range="7">Next 7 days</button>
-    <button class="pill" data-range="14">Next 14 days</button>
-    <button class="pill" data-range="30">Next 30 days</button>
+  <div class="filter-row">
+    <span class="filter-label">Upcoming Dates</span>
+    <div class="filter-group" id="range-filters">
+      <button class="pill active" data-range="all">All</button>
+      <button class="pill" data-range="7">Next 7 days</button>
+      <button class="pill" data-range="14">Next 14 days</button>
+      <button class="pill" data-range="30">Next 30 days</button>
+    </div>
   </div>
-
-  <div class="divider" id="tag-divider" style="display:none"></div>
-  <span class="filter-label" id="tag-filter-label" style="display:none">Type</span>
-  <div class="filter-group" id="tag-filters"></div>
+  <div class="filter-row" id="tag-row" style="display:none">
+    <span class="filter-label">Type</span>
+    <div class="filter-group" id="tag-filters"></div>
+  </div>
 </div>
 
 <div class="main">
@@ -1181,12 +1198,10 @@
     const legend = CONFIG.LEGEND || {};
     const tagEntries = Object.entries(legend);
     const tagContainer = document.getElementById("tag-filters");
-    const tagDivider   = document.getElementById("tag-divider");
-    const tagLabel     = document.getElementById("tag-filter-label");
+    const tagRow       = document.getElementById("tag-row");
 
     if (tagEntries.length && tagContainer) {
-      if (tagDivider) tagDivider.style.display = "";
-      if (tagLabel)   tagLabel.style.display   = "";
+      if (tagRow) tagRow.style.display = "";
       tagEntries.forEach(([tag, { label, hex }]) => {
         const btn = document.createElement("button");
         btn.className = "pill tag-pill";
@@ -1352,6 +1367,18 @@
     setupFilters();
     applyFilters();
   }
+
+  // ── Filter panel toggle ──────────────────────────────────────────────────
+  (function () {
+    const btn   = document.getElementById("filter-toggle");
+    const panel = document.getElementById("filter-panel");
+    const caret = document.getElementById("filter-caret");
+    btn.addEventListener("click", () => {
+      const open = panel.classList.toggle("open");
+      btn.classList.toggle("open", open);
+      caret.textContent = open ? "▲" : "▼";
+    });
+  })();
 
   // ── Mobile height fix ────────────────────────────────────────────────────
   // 100vh can exceed the actual visible area on mobile browsers; use
