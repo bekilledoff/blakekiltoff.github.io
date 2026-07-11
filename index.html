@@ -348,6 +348,13 @@
       color: #6b7280;
       margin-bottom: 8px;
     }
+    .iw-more {
+      font-size: 0.72rem;
+      color: #2563eb;
+      font-weight: 600;
+      margin-top: 2px;
+      margin-bottom: 4px;
+    }
     .iw-divider {
       height: 1px;
       background: #e5e7eb;
@@ -1048,7 +1055,7 @@
   }
 
   // ── Build info window HTML ─────────────────────────────────────────────────
-  function buildInfoWindowContent(ev) {
+  function buildInfoWindowContent(ev, moreCount) {
     const desc = formatDescription(ev.description);  // cleaned, tag-stripped, and formatted
     const { hex, label } = getEventColor(ev);
     const categoryBadge = label
@@ -1056,12 +1063,16 @@
            <span style="width:8px;height:8px;border-radius:50%;background:${hex};border:1.5px solid rgba(0,0,0,0.12);flex-shrink:0;display:inline-block;"></span>${label}
          </span><br>`
       : "";
+    const moreNote = moreCount > 0
+      ? `<div class="iw-more">+${moreCount} more upcoming at this venue</div>`
+      : "";
     return `
       <div class="iw-outer">
         ${categoryBadge}
         <div class="iw-name">${ev.summary}</div>
         <div class="iw-date">${formatDate(ev.startDate)} · ${formatTime(ev.startDate)}</div>
         ${ev.location ? `<div class="iw-location">📍 ${ev.location}</div>` : ""}
+        ${moreNote}
         ${desc ? `<div class="iw-divider"></div><div class="iw-description">${desc}</div>` : ""}
       </div>
     `;
@@ -1096,6 +1107,9 @@
   }
 
   // ── Render map markers ────────────────────────────────────────────────────
+  // One pin per unique venue — prevents stacked duplicate markers for recurring
+  // events. The pin shows the soonest upcoming occurrence; the info window
+  // notes how many more are coming up at the same location.
   function renderMarkers(events) {
     markers.forEach(m => m.setMap(null));
     markers = [];
@@ -1104,17 +1118,27 @@
     const bounds = new google.maps.LatLngBounds();
     let hasGeo = false;
 
+    // Group events by unique lat/lng (5 decimal places ≈ 1m precision)
+    const locationMap = new Map();
     events.forEach(ev => {
       if (!ev.lat || !ev.lng) return;
+      const key = `${ev.lat.toFixed(5)},${ev.lng.toFixed(5)}`;
+      if (!locationMap.has(key)) locationMap.set(key, []);
+      locationMap.get(key).push(ev);
+    });
+
+    locationMap.forEach(eventsHere => {
+      // Events are in chronological order from the API, so [0] is soonest
+      const primary = eventsHere[0];
+      const pos = { lat: primary.lat, lng: primary.lng };
       hasGeo = true;
-      const pos = { lat: ev.lat, lng: ev.lng };
       bounds.extend(pos);
 
-      const { hex } = getEventColor(ev);
+      const { hex } = getEventColor(primary);
       const marker = new google.maps.Marker({
         position: pos,
         map,
-        title: ev.summary,
+        title: primary.location || primary.summary,
         icon: {
           path: google.maps.SymbolPath.CIRCLE,
           scale: 9,
@@ -1125,20 +1149,23 @@
         },
       });
 
+      // All events at this location share the same marker
+      eventsHere.forEach(ev => { ev._marker = marker; });
+
       marker.addListener("click", () => {
-        const card = document.querySelector(`.event-card[data-index="${events.indexOf(ev)}"]`);
-        selectEvent(ev, card, marker);
+        const idx = events.indexOf(primary);
+        const card = document.querySelector(`.event-card[data-index="${idx}"]`);
+        selectEvent(primary, card, marker, eventsHere.length - 1);
       });
 
       markers.push(marker);
-      ev._marker = marker;
     });
 
     if (hasGeo) map.fitBounds(bounds, { padding: 60 });
   }
 
   // ── Select an event ───────────────────────────────────────────────────────
-  function selectEvent(ev, cardEl, markerOverride) {
+  function selectEvent(ev, cardEl, markerOverride, moreCount) {
     if (selectedCardEl) selectedCardEl.classList.remove("selected");
     if (cardEl) {
       cardEl.classList.add("selected");
@@ -1161,7 +1188,7 @@
 
     if (!infoWindow) infoWindow = new google.maps.InfoWindow({ maxWidth: 280 });
     const marker = markerOverride || ev._marker;
-    infoWindow.setContent(buildInfoWindowContent(ev));
+    infoWindow.setContent(buildInfoWindowContent(ev, moreCount || 0));
     infoWindow.open(map, marker);
     map.panTo({ lat: ev.lat, lng: ev.lng });
   }
