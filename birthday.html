@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blake's Birthday</title>
+  <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Caveat:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #f0e9d8;
+      color: #231c0e;
+      font-family: 'Special Elite', serif;
+      font-size: 15px;
+      line-height: 1.6;
+      padding: 2rem 1.5rem 3rem;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    /* ── HEADER ── */
+    header {
+      text-align: center;
+      padding-bottom: 1.25rem;
+      border-bottom: 3px solid #231c0e;
+      margin-bottom: 1.5rem;
+    }
+
+    header h1 {
+      font-family: 'Caveat', cursive;
+      font-size: 56px;
+      font-weight: 700;
+      line-height: 1;
+      color: #231c0e;
+    }
+
+    header .dates {
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      color: #5a4628;
+      margin-top: 4px;
+    }
+
+    /* ── BLURB ── */
+    .blurb {
+      border: 2px solid #231c0e;
+      padding: 1rem 1.1rem;
+      margin-bottom: 1.75rem;
+      background: #fffaee;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    /* ── GIFT IDEAS ── */
+    .gifts {
+      border: 2px dashed #7a5c38;
+      padding: 0.85rem 1rem;
+      margin-bottom: 1.75rem;
+      background: #faf4e5;
+    }
+
+    .gifts h2 {
+      font-family: 'Caveat', cursive;
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .gifts p {
+      font-size: 13px;
+      color: #5a4628;
+    }
+
+    /* ── DAY BLOCKS ── */
+    .day {
+      margin-bottom: 1.75rem;
+    }
+
+    .day-header {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      border-bottom: 2px solid #231c0e;
+      padding-bottom: 4px;
+      margin-bottom: 0.6rem;
+    }
+
+    .day-header h2 {
+      font-family: 'Caveat', cursive;
+      font-size: 30px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .day-header .sub {
+      font-size: 12px;
+      color: #5a4628;
+      letter-spacing: 0.05em;
+    }
+
+    .events {
+      list-style: none;
+      padding: 0;
+    }
+
+    .events li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 5px 0;
+      border-bottom: 1px dotted #b8a070;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .events li:last-child {
+      border-bottom: none;
+    }
+
+    .events li::before {
+      content: "—";
+      color: #7a5c38;
+      flex-shrink: 0;
+      padding-top: 1px;
+    }
+
+    .events li .time {
+      font-size: 12px;
+      color: #7a5c38;
+      white-space: nowrap;
+    }
+
+    .events li a {
+      color: #3d2478;
+      font-size: 12px;
+      text-decoration: underline;
+      margin-left: 4px;
+      white-space: nowrap;
+    }
+
+    .movies {
+      font-size: 13px;
+      color: #5a4628;
+      padding-left: 18px;
+      margin-top: 2px;
+    }
+
+    /* ── RSVP ── */
+    .rsvp {
+      border: 3px double #231c0e;
+      padding: 1.25rem 1.25rem 1.5rem;
+      margin-top: 2rem;
+      background: #fffaee;
+    }
+
+    .rsvp h2 {
+      font-family: 'Caveat', cursive;
+      font-size: 26px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+
+    .rsvp p {
+      font-size: 13px;
+      color: #5a4628;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    .fs-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .fs-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .fs-label {
+      font-size: 12px;
+      color: #5a4628;
+      letter-spacing: 0.05em;
+    }
+
+    .fs-input,
+    .fs-textarea {
+      width: 100%;
+      border: 1.5px solid #231c0e;
+      background: #f7f0df;
+      padding: 8px 10px;
+      font-family: 'Special Elite', serif;
+      font-size: 14px;
+      color: #231c0e;
+      outline: none;
+    }
+
+    .fs-input:focus,
+    .fs-textarea:focus {
+      background: #fffaee;
+      border-color: #7a5c38;
+    }
+
+    .fs-textarea {
+      resize: vertical;
+      min-height: 72px;
+    }
+
+    .fs-button-group {
+      display: flex;
+      justify-content: center;
+    }
+
+    .fs-button {
+      border: 2px solid #231c0e;
+      background: #231c0e;
+      color: #f0e9d8;
+      font-family: 'Special Elite', serif;
+      font-size: 14px;
+      padding: 8px 28px;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .fs-button:hover {
+      background: #7a5c38;
+      border-color: #7a5c38;
+    }
+
+    .fs-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    [data-fs-success] {
+      display: none;
+      text-align: center;
+      font-family: 'Caveat', cursive;
+      font-size: 20px;
+      color: #3a6b1a;
+      padding: 0.5rem;
+    }
+
+    [data-fs-error] {
+      display: none;
+      font-size: 12px;
+      color: #8b1a1a;
+      margin-top: -4px;
+    }
+
+    .fs-input[aria-invalid="true"],
+    .fs-textarea[aria-invalid="true"] {
+      border-color: #8b1a1a;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      font-size: 11px;
+      color: #8c7550;
+      margin-top: 2rem;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Blake's Birthday</h1>
+    <p class="dates">july 23 – 25, 2026 · seattle</p>
+  </header>
+
+  <div class="blurb">
+    If any of these sound fun and you wanna join in, drop your IG handle or preferred contact below and I'll start a group chat to coordinate.
+  </div>
+
+  <div class="gifts">
+    <h2>gift ideas</h2>
+    <p>art &nbsp;·&nbsp; bookshelves &amp; knickknacks &nbsp;·&nbsp; firewood logs &nbsp;·&nbsp; pretty rocks &amp; crystals</p>
+  </div>
+
+  <!-- THURSDAY -->
+  <div class="day">
+    <div class="day-header">
+      <h2>Thursday</h2>
+      <span class="sub">july 23</span>
+    </div>
+    <ul class="events">
+      <li>
+        <span>Make chili con carne</span>
+      </li>
+      <li>
+        <span>
+          Movie night
+          <span class="movies">Berserk &nbsp;·&nbsp; Conan &nbsp;·&nbsp; Aliens</span>
+        </span>
+      </li>
+      <li>
+        <span>Ballard Mandarin Open Mic <span class="time">9pm</span></span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- FRIDAY -->
+  <div class="day">
+    <div class="day-header">
+      <h2>Friday</h2>
+      <span class="sub">greenlake · july 24</span>
+    </div>
+    <ul class="events">
+      <li>
+        <span>Kayaking on Greenlake <span class="time">12–2pm</span></span>
+      </li>
+      <li>
+        <span>Birthday Afternoon <span class="time">3–5pm</span></span>
+      </li>
+      <li>
+        <span>Rickshaw Open Mic <span class="time">7pm</span></span>
+      </li>
+      <li>
+        <span>Road Runners <span class="time">9pm</span></span>
+      </li>
+      <li>
+        <span>Ora — Sam Wolfe (club dancing)<a href="https://tickets.oraseattle.com/e/sam-wolfe-at-ora-6" target="_blank" rel="noopener">tickets ↗</a></span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- SATURDAY -->
+  <div class="day">
+    <div class="day-header">
+      <h2>Saturday</h2>
+      <span class="sub">july 25</span>
+    </div>
+    <ul class="events">
+      <li><span>Brunch at Kurt's</span></li>
+      <li><span>Thrifting (on weed soda)</span></li>
+      <li><span>Shroomin</span></li>
+    </ul>
+  </div>
+
+  <!-- RSVP FORM -->
+  <div class="rsvp">
+    <h2>wanna join?</h2>
+    <p>drop your ig handle or preferred contact &amp; which day(s) you're down for</p>
+    <div data-fs-success>got it — I'll be in touch ✦</div>
+    <div data-fs-error></div>
+    <form id="rsvp-form" class="fs-form" action="https://formspree.io/f/xykrjydg" target="_top" method="POST">
+      <div class="fs-field">
+        <label class="fs-label" for="contact">ig handle or other contact</label>
+        <input class="fs-input" id="contact" name="contact" required data-fs-field />
+        <span data-fs-error="contact"></span>
+      </div>
+      <div class="fs-field">
+        <label class="fs-label" for="message">anything else?</label>
+        <textarea class="fs-textarea" id="message" name="message" data-fs-field></textarea>
+        <span data-fs-error="message"></span>
+      </div>
+      <div class="fs-button-group">
+        <button class="fs-button" type="submit" data-fs-submit-btn>send it</button>
+      </div>
+    </form>
+  </div>
+
+  <footer>made with love · blake's bday 2026</footer>
+
+  <script>
+    window.formspree = window.formspree || function () { (formspree.q = formspree.q || []).push(arguments); };
+    formspree('initForm', { formElement: '#rsvp-form', formId: 'xykrjydg' });
+  </script>
+  <script src="https://unpkg.com/@formspree/ajax@1" defer></script>
+
+</body>
+</html>
