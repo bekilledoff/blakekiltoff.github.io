@@ -12,11 +12,36 @@
       background: #f0e9d8;
       color: #231c0e;
       font-family: 'Special Elite', serif;
-      font-size: 15px;
+      font-size: 16px;
       line-height: 1.6;
-      padding: 2rem 1.5rem 3rem;
+      padding: 1.5rem 1.25rem 3rem;
       max-width: 640px;
       margin: 0 auto;
+    }
+
+    /* ── RSVP LINK ── */
+    .rsvp-link {
+      display: block;
+      text-align: center;
+      margin-bottom: 1.75rem;
+    }
+
+    .rsvp-link a {
+      display: inline-block;
+      border: 2px solid #231c0e;
+      background: #231c0e;
+      color: #f0e9d8;
+      font-family: 'Special Elite', serif;
+      font-size: 15px;
+      padding: 10px 28px;
+      text-decoration: none;
+      letter-spacing: 0.05em;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .rsvp-link a:active {
+      background: #7a5c38;
+      border-color: #7a5c38;
     }
 
     /* ── HEADER ── */
@@ -29,7 +54,7 @@
 
     header h1 {
       font-family: 'Caveat', cursive;
-      font-size: 56px;
+      font-size: clamp(42px, 12vw, 56px);
       font-weight: 700;
       line-height: 1;
       color: #231c0e;
@@ -108,9 +133,9 @@
       display: flex;
       align-items: flex-start;
       gap: 8px;
-      padding: 5px 0;
+      padding: 8px 0;
       border-bottom: 1px dotted #b8a070;
-      font-size: 14px;
+      font-size: 15px;
       line-height: 1.45;
     }
 
@@ -192,11 +217,13 @@
       width: 100%;
       border: 1.5px solid #231c0e;
       background: #f7f0df;
-      padding: 8px 10px;
+      padding: 12px 10px;
       font-family: 'Special Elite', serif;
-      font-size: 14px;
+      font-size: 16px;
       color: #231c0e;
       outline: none;
+      -webkit-appearance: none;
+      border-radius: 0;
     }
 
     .fs-input:focus,
@@ -220,11 +247,13 @@
       background: #231c0e;
       color: #f0e9d8;
       font-family: 'Special Elite', serif;
-      font-size: 14px;
-      padding: 8px 28px;
+      font-size: 16px;
+      padding: 12px 36px;
       cursor: pointer;
       letter-spacing: 0.05em;
       transition: background 0.15s, border-color 0.15s;
+      -webkit-tap-highlight-color: transparent;
+      border-radius: 0;
     }
 
     .fs-button:hover {
@@ -276,48 +305,65 @@
   </header>
 
   <div class="blurb">
-    If any of these sound fun and you wanna join in, drop your IG handle or preferred contact below and I'll start a group chat to coordinate.
+    <p style="margin-bottom: 0.75rem;">It's my birthday weekend and I'm filling four days with my favorite things. The main event is <strong><a href="#friday" style="color: #231c0e; text-decoration: underline;">Friday afternoon at Greenlake</a></strong> — picnicking, hanging out, good vibes — and I would love for as many friends as possible to be there.</p>
+    <p style="margin-bottom: 0.75rem;">Everything else on here is stuff I'm doing anyway: movies I love, open mics I go to, places I like. I'm listing it all because if any of it sounds fun and you want to join, I would genuinely love that. But there's no agenda and nothing is expected — I just want to see my friends.</p>
+    <p>If you're down for anything, drop your info below and I'll add you to a group chat.</p>
+  </div>
+
+  <div class="rsvp-link">
+    <a href="#rsvp">drop your info ↓</a>
   </div>
 
   <div class="gifts">
     <h2>gift ideas</h2>
-    <p>art &nbsp;·&nbsp; bookshelves &amp; knickknacks &nbsp;·&nbsp; firewood logs &nbsp;·&nbsp; pretty rocks &amp; crystals</p>
+    <p style="margin-bottom: 0.6rem; font-size: 13px; color: #5a4628;">no gifts expected at all — but if you're looking for ideas, here are some easy ones i'd genuinely appreciate:</p>
+    <p style="font-size: 14px; line-height: 1.8;">
+      <strong>art &amp; colorful things</strong> — my apartment walls are bare. anything colorful or sentimental, handmade or found.<br>
+      <strong>organizing stuff</strong> — shelves, storage boxes, anything you have lying around you want to get rid of. i need more places to put books, knickknacks, misc things.<br>
+      <strong>pretty rocks &amp; crystals</strong>
+    </p>
   </div>
 
   <!-- THURSDAY -->
   <div class="day">
     <div class="day-header">
       <h2>Thursday</h2>
-      <span class="sub">july 23</span>
+      <span class="sub">my actual birthday · july 23</span>
     </div>
     <ul class="events">
       <li>
-        <span>Make chili con carne</span>
+        <span>Cooking chili con carne for Friday's party</span>
       </li>
       <li>
         <span>
-          Movie night
+          Movie night — one of my favorites, come watch if you want
           <span class="movies">Berserk &nbsp;·&nbsp; Conan &nbsp;·&nbsp; Aliens</span>
         </span>
       </li>
       <li>
-        <span>Ballard Mandarin Open Mic <span class="time">9pm</span></span>
+        <span>Ballard Mandarin Open Mic <span class="time">9pm</span> — one of my favorite spots</span>
       </li>
     </ul>
   </div>
 
   <!-- FRIDAY -->
-  <div class="day">
+  <div class="day" id="friday">
     <div class="day-header">
       <h2>Friday</h2>
       <span class="sub">greenlake · july 24</span>
     </div>
     <ul class="events">
       <li>
-        <span>Kayaking on Greenlake <span class="time">12–2pm</span></span>
+        <span>Kayaking on Greenlake <span class="time">12–2pm</span> — I'll have my kayak out if you want to borrow it, or rent one at the boathouse nearby</span>
       </li>
-      <li>
-        <span>Birthday Afternoon <span class="time">3–5pm</span></span>
+      <li style="flex-direction: column; gap: 4px; align-items: flex-start; border-bottom: 2px solid #231c0e; padding: 10px 0;">
+        <div style="display: flex; align-items: flex-start; gap: 8px; width: 100%;">
+          <span style="color: #7a5c38; flex-shrink: 0;">—</span>
+          <span>
+            <strong style="font-family: 'Caveat', cursive; font-size: 22px; display: block; line-height: 1.1;">Birthday Party · 3–5pm</strong>
+            <span style="font-size: 14px;">the main gathering — Greenlake, chili, friends. this is the one. <a href="https://www.google.com/maps/place/47%C2%B041'04.2%22N+122%C2%B020'19.3%22W/@47.684493,-122.3412789,17z/data=!3m1!4b1!4m4!3m3!8m2!3d47.684493!4d-122.338704?entry=ttu&g_ep=EgoyMDI2MDcxNS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener" style="color: #3d2478; font-size: 13px; text-decoration: underline;">map ↗</a></span>
+          </span>
+        </div>
       </li>
       <li>
         <span>Rickshaw Open Mic <span class="time">7pm</span></span>
@@ -326,7 +372,7 @@
         <span>Road Runners <span class="time">9pm</span></span>
       </li>
       <li>
-        <span>Ora — Sam Wolfe (club dancing)<a href="https://tickets.oraseattle.com/e/sam-wolfe-at-ora-6" target="_blank" rel="noopener">tickets ↗</a></span>
+        <span>Club Ora (Capitol Hill) — Sam Wolfe is DJing and I'm going dancing. come out. <a href="https://tickets.oraseattle.com/e/sam-wolfe-at-ora-6" target="_blank" rel="noopener">tickets ↗</a></span>
       </li>
     </ul>
   </div>
@@ -338,14 +384,14 @@
       <span class="sub">july 25</span>
     </div>
     <ul class="events">
-      <li><span>Brunch at Kurt's</span></li>
-      <li><span>Thrifting (on weed soda)</span></li>
+      <li><span>Brunch at Coupe and Flute — one of my favorite restaurants in Seattle, genuinely some of the best food you'll find <a href="https://maps.google.com/?q=Coupe+and+Flute+Seattle" target="_blank" rel="noopener" style="color: #3d2478; font-size: 13px; text-decoration: underline;">map ↗</a></span></li>
+      <li><span>Smoking a joint and browsing Lander Street Vintage — a vintage mall in Sodo I love, one of my favorite ways to spend a Saturday <a href="https://maps.google.com/?q=Lander+Street+Vintage+Seattle" target="_blank" rel="noopener" style="color: #3d2478; font-size: 13px; text-decoration: underline;">map ↗</a></span></li>
       <li><span>Shroomin</span></li>
     </ul>
   </div>
 
   <!-- RSVP FORM -->
-  <div class="rsvp">
+  <div class="rsvp" id="rsvp">
     <h2>wanna join?</h2>
     <p>drop your ig handle or preferred contact &amp; which day(s) you're down for</p>
     <div data-fs-success>got it — I'll be in touch ✦</div>
