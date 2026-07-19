@@ -106,7 +106,7 @@
       display: flex;
       align-items: baseline;
       gap: 10px;
-      border-bottom: 2px solid #231c0e;
+      border-bottom: 1px solid #b8a070;
       padding-bottom: 4px;
       margin-bottom: 0.6rem;
     }
@@ -148,6 +148,10 @@
       color: #7a5c38;
       flex-shrink: 0;
       padding-top: 1px;
+    }
+
+    .events li.no-dash::before {
+      content: none;
     }
 
     .events li .time {
@@ -305,7 +309,7 @@
   </header>
 
   <div class="blurb">
-    <p style="margin-bottom: 0.75rem;">It's my birthday weekend and I'm filling four days with my favorite things. The main event is <strong><a href="#friday" style="color: #231c0e; text-decoration: underline;">Friday afternoon at Greenlake</a></strong> — picnicking, hanging out, good vibes — and I would love for as many friends as possible to be there.</p>
+    <p style="margin-bottom: 0.75rem;">It's my birthday and I'm taking a four day weekend. The main event is <strong><a href="#friday" style="color: #231c0e; text-decoration: underline;">Friday afternoon at Greenlake</a></strong> — picnicking, hanging out, good vibes — and I would love for as many friends as possible to be there.</p>
     <p style="margin-bottom: 0.75rem;">Everything else on here is stuff I'm doing anyway: movies I love, open mics I go to, places I like. I'm listing it all because if any of it sounds fun and you want to join, I would genuinely love that. But there's no agenda and nothing is expected — I just want to see my friends.</p>
     <p>If you're down for anything, drop your info below and I'll add you to a group chat.</p>
   </div>
@@ -332,11 +336,11 @@
     </div>
     <ul class="events">
       <li>
-        <span>Cooking chili con carne for Friday's party</span>
+        <span>Cooking chili con carne for Friday's party <span class="time">4–6pm</span></span>
       </li>
       <li>
         <span>
-          Movie night — one of my favorites, come watch if you want
+          Movie night <span class="time">6pm</span> — one of my favorites, come watch if you want
           <span class="movies">Berserk &nbsp;·&nbsp; Conan &nbsp;·&nbsp; Aliens</span>
         </span>
       </li>
@@ -356,13 +360,11 @@
       <li>
         <span>Kayaking on Greenlake <span class="time">12–2pm</span> — I'll have my kayak out if you want to borrow it, or rent one at the boathouse nearby</span>
       </li>
-      <li style="flex-direction: column; gap: 4px; align-items: flex-start; border-bottom: 2px solid #231c0e; padding: 10px 0;">
-        <div style="display: flex; align-items: flex-start; gap: 8px; width: 100%;">
-          <span style="color: #7a5c38; flex-shrink: 0;">—</span>
-          <span>
-            <strong style="font-family: 'Caveat', cursive; font-size: 22px; display: block; line-height: 1.1;">Birthday Party · 3–5pm</strong>
-            <span style="font-size: 14px;">the main gathering — Greenlake, chili, friends. this is the one. <a href="https://www.google.com/maps/place/47%C2%B041'04.2%22N+122%C2%B020'19.3%22W/@47.684493,-122.3412789,17z/data=!3m1!4b1!4m4!3m3!8m2!3d47.684493!4d-122.338704?entry=ttu&g_ep=EgoyMDI2MDcxNS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener" style="color: #3d2478; font-size: 13px; text-decoration: underline;">map ↗</a></span>
-          </span>
+      <li class="no-dash" style="flex-direction: column; gap: 4px; align-items: flex-start; border-bottom: 2px solid #231c0e; padding: 10px 0;">
+        <hr style="border: none; border-top: 2px solid #231c0e; width: 100%; margin-bottom: 8px;" />
+        <div style="width: 100%; text-align: center;">
+          <strong style="font-family: 'Caveat', cursive; font-size: 26px; display: block; line-height: 1.1;">Birthday Party · 3–5pm</strong>
+          <span style="font-size: 17px;">the main gathering — Greenlake, chili, friends. this is the one. <a href="https://www.google.com/maps/place/47%C2%B041'04.2%22N+122%C2%B020'19.3%22W/@47.684493,-122.3412789,17z/data=!3m1!4b1!4m4!3m3!8m2!3d47.684493!4d-122.338704?entry=ttu&g_ep=EgoyMDI2MDcxNS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener" style="color: #3d2478; font-size: 15px; text-decoration: underline;">map ↗</a></span>
         </div>
       </li>
       <li>
@@ -372,7 +374,7 @@
         <span>Road Runners <span class="time">9pm</span></span>
       </li>
       <li>
-        <span>Club Ora (Capitol Hill) — Sam Wolfe is DJing and I'm going dancing. come out. <a href="https://tickets.oraseattle.com/e/sam-wolfe-at-ora-6" target="_blank" rel="noopener">tickets ↗</a></span>
+        <span>Club Ora (Capitol Hill) <span class="time">11pm</span> — Sam Wolfe is DJing and I'm going dancing. come out. <a href="https://tickets.oraseattle.com/e/sam-wolfe-at-ora-6" target="_blank" rel="noopener">tickets ↗</a></span>
       </li>
     </ul>
   </div>
@@ -384,16 +386,16 @@
       <span class="sub">july 25</span>
     </div>
     <ul class="events">
-      <li><span>Brunch at Coupe and Flute — one of my favorite restaurants in Seattle, genuinely some of the best food you'll find <a href="https://maps.google.com/?q=Coupe+and+Flute+Seattle" target="_blank" rel="noopener" style="color: #3d2478; font-size: 13px; text-decoration: underline;">map ↗</a></span></li>
-      <li><span>Smoking a joint and browsing Lander Street Vintage — a vintage mall in Sodo I love, one of my favorite ways to spend a Saturday <a href="https://maps.google.com/?q=Lander+Street+Vintage+Seattle" target="_blank" rel="noopener" style="color: #3d2478; font-size: 13px; text-decoration: underline;">map ↗</a></span></li>
-      <li><span>Shroomin</span></li>
+      <li><span>Brunch at Coupe and Flute <span class="time">11am</span> — one of my favorite restaurants in Seattle, genuinely some of the best food you'll find <a href="https://maps.google.com/?q=Coupe+and+Flute+Seattle" target="_blank" rel="noopener" style="color: #3d2478; font-size: 13px; text-decoration: underline;">map ↗</a></span></li>
+      <li><span>Smoking a joint and browsing Lander Street Vintage <span class="time">2pm</span> — a vintage mall in Sodo I love, one of my favorite ways to spend a Saturday <a href="https://maps.google.com/?q=Lander+Street+Vintage+Seattle" target="_blank" rel="noopener" style="color: #3d2478; font-size: 13px; text-decoration: underline;">map ↗</a></span></li>
+      <li><span>Magic mushrooms <span class="time">7pm</span> — anyone's welcome to join. no hero doses. I've got whole shrooms, chocolate bars, and can make tea for sensitive stomachs</span></li>
     </ul>
   </div>
 
   <!-- RSVP FORM -->
   <div class="rsvp" id="rsvp">
     <h2>wanna join?</h2>
-    <p>drop your ig handle or preferred contact &amp; which day(s) you're down for</p>
+    <p>for the <a href="#friday" style="color: #5a4628;">main event Friday</a>, just show up — no need to fill this out. if you want to join anything else listed, drop your info and I'll add you to a group chat to coordinate.</p>
     <div data-fs-success>got it — I'll be in touch ✦</div>
     <div data-fs-error></div>
     <form id="rsvp-form" class="fs-form" action="https://formspree.io/f/xykrjydg" target="_top" method="POST">
